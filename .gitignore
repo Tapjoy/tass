@@ -1,0 +1,8 @@
+/config
+/.bundle
+/spec/fixtures/vcr_cassettes
+Gemfile.lock
+*.gem
+/tmp
+.metrics
+.idea

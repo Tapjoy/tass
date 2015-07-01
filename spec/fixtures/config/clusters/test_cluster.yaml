@@ -1,0 +1,11 @@
+:autoscale:         true
+:human_name:        TASS Test Cluster
+:name:              tass-test
+:instance_type:     c3.2xlarge
+:group:             tass-test
+:alerts: false
+:recipes:
+  - recipe[core-role::default]
+:tags:
+  -
+    :user:facet_name: tass-test

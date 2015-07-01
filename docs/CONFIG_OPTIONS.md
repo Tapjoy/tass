@@ -1,0 +1,45 @@
+# Configuration Options
+```yaml
+:bootstrap_script:               # (String) Name of userdata script
+
+# ELB Parameters
+:instance_protocol:              # (String) Protocol that instance listens on
+:instance_port:                  # (Int) Port number that instance listens on
+:elb_health_interval:            # (Int) ELB health check interval in minutes
+:elb_health_timeout:             # (Int) ELB health timeout in minutes
+:elb_unhealthy_threshold:        # (Int) ELB unhealthy check limit
+:elb_healthy_threshold:          # (Int) ELB health check limit
+:elb_port:                       # (Int) Port ELB listens on
+:create_elb:                     # (Boolean) Whether or not to create an ELB associated with the autoscaling group
+:clobber_elb:                    # (Boolean) Whether or not to force ELB creation, clobbering existing ELB if any
+
+
+# Scaling Parameters
+:autoscale:                      # (Boolean) Whether or not to configure automatic autoscaling on the autoscaling group
+:scale_up_cooldown:              # (Int) Time in minutes to cooldown post scaling up
+:scale_up_scaling_adjustment:    # (Int) Number of servers to scale up at one time
+:scale_up_threshold:             # (Int) CPU Percentage to scale up on
+:scale_down_cooldown:            # (Int) Time in minutes to cooldown post scaling down
+:scale_down_scaling_adjustment:  # (Int) Number of servers to scale down at one time (MUST BE < 0)
+:scale_down_threshold:           # (Int) CPU Percentage to scale down on
+:health_check_type:              # (String) Type of health check (MUST BE 'EC2' or 'ELB')
+
+:image_id:                       # (String) Image id to launch instances with (MUST START WITH ami-)
+:iam_instance_profile:           # (String) IAM profile to launch instances with
+:create_as_group:                # (Boolean) Whether or not to create an autoscaling group
+:alerts:                         # (Boolean) Whether or not to create scaling alerts
+:clobber:                        # (Boolean) Whether or not to clobber existing autoscaling group, if one exists
+
+:aws_region:                     # (String) Region to launch AWS instances in
+:tags:                           # (Hash) AWS tags to associate with autoscaling instances.  Keys are Symbols and Values are Strings
+:keypair:                        # (String) Name of AWS keypair to use
+:sns_base_arn:                   # (String) Base ARN to use for SNS topics/notifications takes the format of 'arn:aws:sns:<region>:<account_id>'
+:zones:                          # (String Array) List of Availability Zones to use
+:human_name:                     # (String) Human readable name for autoscaling group
+:name:                           # (String) name for autoscaling group
+:instance_type:                  # (String) Instance type to use (e.g, t2.medium)
+:group:                          # (String) Comma-separated list of security groups to attach to autoscaler
+:vpc_subnets:                    # (String) Comma-separated list of VPC subnets to assign to autoscaler (valid for VPC instances only)
+:classic_link_vpc_id:            # (String) VPC id to use for ClassicLink (valid for EC2-Classic instances only)
+:classic_link_sg_ids:            # (String Array) VPC subnets to use for ClassicLink (valid for EC2-Classic instances only)
+```

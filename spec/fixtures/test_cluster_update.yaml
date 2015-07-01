@@ -1,0 +1,15 @@
+:autoscale:         true
+:human_name:        ASB Test Cluster
+:name:              asb-test
+:instance_type:     c3.xlarge
+:group:             asb-test
+:create_elb:        true
+:elb_name:          test-elb
+:elb_port:          80
+:instance_protocol: http
+:bootstrap_script:  bootstrap-chef11.sh.erb
+:recipes:
+  - recipe[tpat::memcached]
+:tags:
+  -
+    :user:facet_name: asb-test
