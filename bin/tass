@@ -1,0 +1,97 @@
+#!/usr/bin/env ruby
+
+require 'tapjoy/autoscaling_bootstrap'
+
+def confirm_config(aws_env, misc_config, opts)
+  use_vpc = true if misc_config[:vpc_subnets]
+  unless Tapjoy::AutoscalingBootstrap::Base.new.confirm_config(**aws_env,
+    **misc_config, **opts, use_vpc: use_vpc)
+
+    abort('Cannot continue if configuration is not correct.  Please fix.')
+  end
+end
+
+def supported_envs(listing)
+  envs = []
+  Dir.entries("#{listing}/config/common").each do |file|
+    next unless file.end_with?('yaml')
+    next if file.start_with?('defaults')
+    envs << file.chomp!('.yaml')
+  end
+  envs
+end
+
+SUB_COMMANDS = %w(create update audit)
+Trollop::options do
+  usage '[SUB_COMMAND] [options]'
+  synopsis "\nConfigures autoscaling groups.\nAvailable subcommands are: #{SUB_COMMANDS}"
+  version "#{File.basename($0)} #{Tapjoy::AutoscalingBootstrap::VERSION} \u00A9 2015 Tapjoy, Inc."
+  stop_on SUB_COMMANDS
+end
+
+cmd = ARGV.shift
+case cmd
+when 'create'
+  opts = Trollop.options do
+    # Set help message
+    usage 'create [options]'
+    synopsis 'This command creates new autoscaling groups, and overwrites existing ones.'
+
+    opt :filename, 'Specify config file to load', type: :string, required: true
+    opt :config_dir, 'Specify the directory for configuration files', type: :string, short: :none, default: Tapjoy::AutoscalingBootstrap.config_dir
+    opt :env, 'Specify which environment config to load', required: true, type: :string
+    opt :clobber_elb, 'Force ELB creation', default: false, short: :none
+    opt :clobber_as, 'Force AS group creation', default: false, short: :none
+    opt :prompt, 'Enable/disable prompts', default: true
+  end
+
+  env_list = supported_envs(opts[:config_dir])
+  unless env_list.include?(opts[:env])
+    Trollop.die :env, "Currently supported enviroments are #{env_list.join(',')}"
+  end
+
+  config, aws_env, user_data = Tapjoy::AutoscalingBootstrap::Base.new.configure_environment(opts[:filename], opts[:env], opts[:config_dir])
+  Aws.config[:region] = config[:aws_region]
+  confirm_config(aws_env, config, opts)
+
+  Tapjoy::AutoscalingBootstrap::Base.new.check_clobber(opts, config)
+  Tapjoy::AutoscalingBootstrap::AutoscalingGroup.new.create(opts, config, aws_env, user_data)
+when 'update'
+  opts = Trollop.options do
+    # Set help message
+    usage 'update [options]'
+    synopsis 'This command creates new launch configurations based on existing autoscaling groups using local instance configuration files as overrides.'
+    opt :filename, 'Specify config file to load', type: :string, required: true
+    opt :config_dir, 'Specify the directory for configuration files', type: :string, short: :none, default: Tapjoy::AutoscalingBootstrap.config_dir
+    opt :env, 'Specify which environment config to load', required: true, type: :string
+    opt :prompt, 'Enable/disable prompts', default: true
+  end
+
+  env_list = supported_envs(opts[:config_dir])
+  unless env_list.include?(opts[:env])
+    Trollop.die :env, "Currently supported enviroments are #{env_list.join(',')}"
+  end
+
+  config, aws_env, user_data = Tapjoy::AutoscalingBootstrap::Base.new.configure_environment(opts[:filename], opts[:env], opts[:config_dir])
+  Aws.config[:region] = config[:aws_region]
+  confirm_config(aws_env, config, opts)
+
+  Tapjoy::AutoscalingBootstrap::LaunchConfiguration.new(config, aws_env, user_data)
+when 'audit'
+  opts = Trollop.options do
+    usage 'audit'
+    synopsis 'This command compares local configuration files for a given cluster to the existing launch configuration and autoscaling group running in AWS.'
+    opt :filename, 'Specify config file to load', type: :string, required: true
+    opt :config_dir, 'Specify the directory for configuration files', type: :string, short: :none, default: Tapjoy::AutoscalingBootstrap.config_dir
+    opt :env, 'Specify which environment config to load', required: true, type: :string
+    opt :prompt, 'Enable/disable prompts', default: true
+  end
+
+  config, aws_env, user_data = Tapjoy::AutoscalingBootstrap::Base.new.configure_environment(opts[:filename], opts[:env], opts[:config_dir])
+  Aws.config[:region] = config[:aws_region]
+
+  config.merge!(aws_env.merge({user_data: Base64.encode64("#{user_data}")}))
+  Tapjoy::AutoscalingBootstrap::Audit.new(config)
+else
+  Trollop.educate
+end

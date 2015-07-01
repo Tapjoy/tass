@@ -1,0 +1,35 @@
+# This yaml file provides defaults for anything that does not require
+# altering an existing variable or method calls
+
+:bootstrap_script:               bootstrap-chef.sh.erb
+
+# ELB Parameters
+:instance_protocol:              http
+:instance_port:                  80
+:elb_health_interval:            15
+:elb_health_timeout:             5
+:elb_unhealthy_threshold:        2
+:elb_healthy_threshold:          2
+:elb_port:                       nil
+:create_elb:                     false
+:clobber_elb:                    false
+
+
+# Scaling Parameters
+:autoscale:                      false
+:scale_up_cooldown:              600
+:scale_up_scaling_adjustment:    2
+:scale_up_threshold:             75
+:scale_down_cooldown:            300
+:scale_down_scaling_adjustment: -1
+:scale_down_threshold:           70
+:health_check_type:              'EC2'
+
+:image_id:                       ami-48312f20
+:iam_instance_profile:           ec2_general_purpose
+:create_as_group:                true
+:alerts:                         true
+:clobber:                        false
+
+:aws_region:                     us-east-1
+:tags:                           #intentionally left empty

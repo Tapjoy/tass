@@ -1,0 +1,3 @@
+:keypair:              'ops-qa-keypair'
+:sns_base_arn:         'arn:aws:sns:us-east-1:<account_id>'
+:zones:                ['us-east-1b', 'us-east-1c', 'us-east-1e']
