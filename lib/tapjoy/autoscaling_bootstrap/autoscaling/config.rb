@@ -16,7 +16,7 @@ module Tapjoy
           puts "Creating launch config: #{Tapjoy::AutoscalingBootstrap.config_name}"
           begin
             Tapjoy::AutoscalingBootstrap::Base.new.sec_group_exists(
-              aws_env[:security_groups])
+              aws_env[:security_groups]) unless config[:vpc_subnets]
             Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::LaunchConfig.create(
               **config, **aws_env, user_data: user_data)
           rescue Aws::AutoScaling::Errors::ValidationError => err
