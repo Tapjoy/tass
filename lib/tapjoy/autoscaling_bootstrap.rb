@@ -154,13 +154,22 @@ module Tapjoy
       end
 
       # configure environment
+
       def configure_environment(filename, env=nil, config_dir)
-        defaults_hash = self.load_yaml("#{config_dir}/config/common/defaults.yaml")
-        facet_hash    = self.load_yaml("#{config_dir}/config/clusters/#{filename}")
+        if filename.include?(File::SEPARATOR)
+          facet_file    = filename
+          config_dir   = File.expand_path('../../..', facet_file)
+        else
+          facet_file    = File.join(config_dir, 'config', 'clusters', filename)
+        end
+
+        common_path   = File.join(config_dir, 'config', 'common')
+        defaults_hash = self.load_yaml(File.join(common_path, 'defaults.yaml'))
+        facet_hash    = self.load_yaml(facet_file)
         env         ||= facet_hash[:environment]
         env         ||= defaults_hash[:environment]
         Tapjoy::AutoscalingBootstrap.is_valid_env?(config_dir, env)
-        env_hash      = self.load_yaml("#{config_dir}/config/common/#{env}.yaml")
+        env_hash      = self.load_yaml(File.join(common_path, "#{env}.yaml"))
 
         new_config = defaults_hash.merge!(env_hash).merge(facet_hash)
         new_config[:config_dir] = config_dir

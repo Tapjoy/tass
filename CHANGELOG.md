@@ -1,3 +1,9 @@
+v0.2.0
+==
+#### Enhancement
+* Issue [#5](https://github.com/Tapjoy/tass/issues/5), PR [#10](https://github.com/Tapjoy/tass/pull/10): tass <action> --file should take a file path
+* Properly catch error when launch configuration limit has been exceeded
+
 v0.1.3
 ==
 #### Enhancement
