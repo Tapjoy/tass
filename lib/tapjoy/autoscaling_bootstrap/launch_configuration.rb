@@ -9,7 +9,7 @@ module Tapjoy
 
         updated_config = current.to_hash.merge!(new_config)
 
-        lc_name = "#{updated_config[:launch_configuration_name].split('-config')[0]}-config_#{date_stamp}"
+        lc_name = "#{Tapjoy::AutoscalingBootstrap.config_name}_#{date_stamp}"
         update(config_name: lc_name, user_data: user_data,
           updated_config: updated_config, aws_env: aws_env)
       end
