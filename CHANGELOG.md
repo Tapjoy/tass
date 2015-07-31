@@ -1,3 +1,8 @@
+v0.1.3
+==
+#### Enhancement
+* Issue [#6](https://github.com/Tapjoy/tass/issues/6), PR [#8](https://github.com/Tapjoy/tass/pull/8): Allow environment to be specified in YAML
+
 v0.1.2
 ==
 #### Bug Fixes
@@ -7,6 +12,7 @@ v0.1.1
 ==
 #### Bug Fixes
 * PR [#2](https://github.com/Tapjoy/tass/pull/2): Allow VPC security group to be overwritten
+
 
 v0.1.0
 ==
