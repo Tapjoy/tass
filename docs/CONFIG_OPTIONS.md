@@ -24,6 +24,7 @@
 :scale_down_threshold:           # (Int) CPU Percentage to scale down on
 :health_check_type:              # (String) Type of health check (MUST BE 'EC2' or 'ELB')
 
+:environment:                    # (String) Specify which environment config to load. NOTE: can be specified on the command line
 :image_id:                       # (String) Image id to launch instances with (MUST START WITH ami-)
 :iam_instance_profile:           # (String) IAM profile to launch instances with
 :create_as_group:                # (Boolean) Whether or not to create an autoscaling group
