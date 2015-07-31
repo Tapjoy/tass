@@ -13,7 +13,6 @@ v0.1.1
 #### Bug Fixes
 * PR [#2](https://github.com/Tapjoy/tass/pull/2): Allow VPC security group to be overwritten
 
-
 v0.1.0
 ==
 * Initial version made available for public consumption
