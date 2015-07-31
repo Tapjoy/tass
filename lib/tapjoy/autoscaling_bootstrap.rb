@@ -63,6 +63,24 @@ module Tapjoy
       def config_dir
         @config_dir ||= ENV['TASS_CONFIG_DIR'] || "#{ENV['HOME']}/.tass"
       end
+
+      def is_valid_env?(config_dir, env)
+        env_list = self.supported_envs(config_dir)
+        puts config_dir
+        unless env_list.include?(env)
+          Trollop.die :env, "Currently supported enviroments are #{env_list.join(',')}"
+        end
+      end
+
+      def supported_envs(listing)
+        envs = []
+        Dir.entries("#{listing}/config/common").each do |file|
+          next unless file.end_with?('yaml')
+          next if file.start_with?('defaults')
+          envs << file.chomp!('.yaml')
+        end
+        envs
+      end
     end
 
     # Base class for generic methods used throughout the gem
@@ -136,9 +154,12 @@ module Tapjoy
       end
 
       # configure environment
-      def configure_environment(filename, env, config_dir)
+      def configure_environment(filename, env=nil, config_dir)
         defaults_hash = self.load_yaml("#{config_dir}/config/common/defaults.yaml")
         facet_hash    = self.load_yaml("#{config_dir}/config/clusters/#{filename}")
+        env         ||= facet_hash[:environment]
+        env         ||= defaults_hash[:environment]
+        Tapjoy::AutoscalingBootstrap.is_valid_env?(config_dir, env)
         env_hash      = self.load_yaml("#{config_dir}/config/common/#{env}.yaml")
 
         new_config = defaults_hash.merge!(env_hash).merge(facet_hash)
