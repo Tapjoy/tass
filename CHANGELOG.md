@@ -1,3 +1,8 @@
+v0.2.1
+==
+#### Bug Fixes
+* PR [#11](https://github.com/Tapjoy/tass/pull/11): Errors creating/updating launch configurations should be fatal
+
 v0.2.0
 ==
 #### Enhancement

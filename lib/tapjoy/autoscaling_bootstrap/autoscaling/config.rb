@@ -20,9 +20,9 @@ module Tapjoy
             Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::LaunchConfig.create(
               **config, **aws_env, user_data: user_data)
           rescue Aws::AutoScaling::Errors::ValidationError => err
-            STDERR.puts "Cannot create launch configuration: #{err}"
+            abort("Cannot create launch configuration: #{err}")
           rescue Aws::AutoScaling::Errors::LimitExceeded => err
-            STDERR.puts "Maximum launch configurations exceeded: #{err}"
+            abort("Maximum launch configurations exceeded: #{err}")
           end
         end
 
