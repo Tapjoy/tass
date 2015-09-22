@@ -43,9 +43,11 @@ module Tapjoy
                 tags: Tapjoy::AutoscalingBootstrap::Autoscaling::Group.new.generate_tags(tags)
               }
 
-              if create_elb
+              # If we've chosen to explicitly create an ELB and assign to this ASG
+              # OR if we've given it a list of ELBs to join (or both)
+              if create_elb || !Tapjoy::AutoscalingBootstrap.elb_list.empty?
                 group_hash.merge!({
-                  load_balancer_names: [Tapjoy::AutoscalingBootstrap.elb_name],
+                  load_balancer_names: Tapjoy::AutoscalingBootstrap.elbs_to_join,
                   health_check_type: health_check_type,
                   health_check_grace_period: 300,
                   })

@@ -9,10 +9,11 @@
 :elb_health_timeout:             # (Int) ELB health timeout in minutes
 :elb_unhealthy_threshold:        # (Int) ELB unhealthy check limit
 :elb_healthy_threshold:          # (Int) ELB health check limit
+:elb_name:                       # (String) ELB name to create and join for an Autoscale Group
 :elb_port:                       # (Int) Port ELB listens on
 :create_elb:                     # (Boolean) Whether or not to create an ELB associated with the autoscaling group
 :clobber_elb:                    # (Boolean) Whether or not to force ELB creation, clobbering existing ELB if any
-
+:elb_list:                       # (Array) List of ELB names to have the Autoscale Group join. This will automatically include anything set in :elb_name:, but will not create them if they do not exist
 
 # Scaling Parameters
 :autoscale:                      # (Boolean) Whether or not to configure automatic autoscaling on the autoscaling group
