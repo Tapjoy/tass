@@ -40,8 +40,27 @@ module Tapjoy
       attr_accessor :scaler_name, :config_name, :create_elb
       attr_reader :elb_name
 
+      # If you're using AutoscalingBootstrap to create a new ELB, that name goes here
       def elb_name=(str)
         @elb_name = str
+      end
+
+      # If you're using AutoscalingBootstrap to join to a list of existing ELBs, that array
+      # goes here. This list can include or not include the provided elb_name, the
+      # array + a custom elb_name will be uniq-ed before being passed to Amazon
+      def elb_list=(list)
+        @elb_list = list
+      end
+
+      def elb_list
+        @elb_list ||= []
+      end
+
+      # This is the list of elbs passed to the autoscaling configuration. It will include
+      # the created elb, as well as the specific list of elbs to join. It will call uniq
+      # on the list in case you accidentally specify the same elb twice
+      def elbs_to_join
+        (elb_list + [Tapjoy::AutoscalingBootstrap.elb_name]).uniq
       end
 
       def policy
@@ -181,6 +200,7 @@ module Tapjoy
         puts new_config[:elb_name]
         Tapjoy::AutoscalingBootstrap.elb_name = new_config[:elb_name] || 'NaE'
         Tapjoy::AutoscalingBootstrap.create_elb = new_config[:create_elb]
+        Tapjoy::AutoscalingBootstrap.elb_list = new_config[:elb_list] || []
         user_data = self.generate_user_data(new_config)
         return new_config, aws_env, user_data
       end
