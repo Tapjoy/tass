@@ -2,7 +2,7 @@ require File.expand_path('../lib/tapjoy/autoscaling_bootstrap/version', __FILE__
 Gem::Specification.new do |s|
   s.name                  = 'tass'
   s.version               = Tapjoy::AutoscalingBootstrap::VERSION
-  s.date                  = '2015-08-11'
+  s.date                  = Time.new.strftime("%Y-%m-%d")
   s.summary               = 'Tapjoy Autoscaling Suite'
   s.description           = 'TASS is the suite of tools that the Tapjoy Operations team uses to manage autoscaling groups and launch configurations.'
   s.authors               = ['Ali Tayarani']
