@@ -9,11 +9,10 @@ module Tapjoy
               @client ||= Tapjoy::AutoscalingBootstrap::AWS::Autoscaling.client
             end
 
-            def resize(min_size: 0, max_size: 0, desired_capacity:0)
+            def resize(min: 0, max: 0, desired:0)
               self.client.update_auto_scaling_group(
                 auto_scaling_group_name: Tapjoy::AutoscalingBootstrap.scaler_name,
-                min_size: min_size, max_size: max_size,
-                desired_capacity: desired_capacity)
+                min_size: min, max_size: max, desired_capacity: desired)
             end
 
             def delete(force_delete: true)
@@ -30,30 +29,35 @@ module Tapjoy
               )[0][0]
             end
 
+            def detach
+              self.client.detach_instances(
+                instance_ids: describe.instances.map(&:instance_id),
+                auto_scaling_group_name: Tapjoy::AutoscalingBootstrap.scaler_name,
+                should_decrement_desired_capacity: true,
+              )
+            end
+
             def create(zones:, health_check_type: nil, tags:,
-              vpc_subnets: nil, create_elb:, **unused_values)
+              vpc_subnets: nil, termination_policies: , **unused_values)
 
               group_hash = {
                 auto_scaling_group_name: Tapjoy::AutoscalingBootstrap.scaler_name,
                 availability_zones: zones,
                 launch_configuration_name: Tapjoy::AutoscalingBootstrap.config_name,
                 min_size: 0, max_size: 0, desired_capacity: 0,
-                termination_policies: ['OldestInstance'],
+                termination_policies: termination_policies,
                 vpc_zone_identifier: vpc_subnets,
                 tags: Tapjoy::AutoscalingBootstrap::Autoscaling::Group.new.generate_tags(tags)
               }
 
-              # If we've chosen to explicitly create an ELB and assign to this ASG
-              # OR if we've given it a list of ELBs to join (or both)
-              if create_elb || !Tapjoy::AutoscalingBootstrap.elb_list.empty?
-                group_hash.merge!({
-                  load_balancer_names: Tapjoy::AutoscalingBootstrap.elbs_to_join,
-                  health_check_type: health_check_type,
-                  health_check_grace_period: 300,
-                  })
-              end
-
               self.client.create_auto_scaling_group(**group_hash)
+            end
+
+            def attach_elb(elb_list)
+              self.client.attach_load_balancers({
+                auto_scaling_group_name: Tapjoy::AutoscalingBootstrap.scaler_name,
+                load_balancer_names: elb_list.split(','),
+              })
             end
           end
         end

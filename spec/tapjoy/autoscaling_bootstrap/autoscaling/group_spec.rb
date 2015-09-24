@@ -55,4 +55,22 @@ context Tapjoy::AutoscalingBootstrap::Autoscaling::Group do
       end
     end
   end
+
+  context 'dynamically scale auto scaling group', asg: 'dynamic_scale' do
+    describe '#scale' do
+      it 'scales cluster up' do
+        asg = Tapjoy::AutoscalingBootstrap::Autoscaling::Group.new
+        expect{asg.scale(new_config)}.to_not raise_error
+      end
+    end
+  end
+
+  context 'static auto scaling group', asg: 'static_scale' do
+    describe '#scale' do
+      it 'resizes cluster' do
+        asg = Tapjoy::AutoscalingBootstrap::Autoscaling::Group.new
+        expect{asg.scale(new_config)}.to_not raise_error
+      end
+    end
+  end
 end

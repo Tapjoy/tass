@@ -22,7 +22,7 @@ module Tapjoy
         config[:key_name] = config.delete :keypair
         config[:launch_configuration_name] = Tapjoy::AutoscalingBootstrap.config_name
         keys = %w(bootstrap_script chef_server_url clobber clobber_elb
-          create_as_group config_dir)
+          create_as_group)
         delete_keys(config, keys)
 
         config

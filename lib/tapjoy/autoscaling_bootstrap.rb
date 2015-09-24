@@ -30,6 +30,7 @@ require_relative 'autoscaling_bootstrap/autoscaling_group'
 require_relative 'autoscaling_bootstrap/launch_configuration'
 require_relative 'autoscaling_bootstrap/version'
 require_relative 'autoscaling_bootstrap/audit'
+require_relative 'autoscaling_bootstrap/ec2'
 
 module Tapjoy
   # Module for Autoscaling Bootstrap
@@ -43,24 +44,6 @@ module Tapjoy
       # If you're using AutoscalingBootstrap to create a new ELB, that name goes here
       def elb_name=(str)
         @elb_name = str
-      end
-
-      # If you're using AutoscalingBootstrap to join to a list of existing ELBs, that array
-      # goes here. This list can include or not include the provided elb_name, the
-      # array + a custom elb_name will be uniq-ed before being passed to Amazon
-      def elb_list=(list)
-        @elb_list = list
-      end
-
-      def elb_list
-        @elb_list ||= []
-      end
-
-      # This is the list of elbs passed to the autoscaling configuration. It will include
-      # the created elb, as well as the specific list of elbs to join. It will call uniq
-      # on the list in case you accidentally specify the same elb twice
-      def elbs_to_join
-        (elb_list + [Tapjoy::AutoscalingBootstrap.elb_name]).uniq
       end
 
       def policy
@@ -83,9 +66,8 @@ module Tapjoy
         @config_dir ||= ENV['TASS_CONFIG_DIR'] || "#{ENV['HOME']}/.tass"
       end
 
-      def is_valid_env?(config_dir, env)
-        env_list = self.supported_envs(config_dir)
-        puts config_dir
+      def valid_env?(config_dir, env)
+        env_list = supported_envs(config_dir)
         unless env_list.include?(env)
           Trollop.die :env, "Currently supported enviroments are #{env_list.join(',')}"
         end
@@ -93,7 +75,7 @@ module Tapjoy
 
       def supported_envs(listing)
         envs = []
-        Dir.entries("#{listing}/config/common").each do |file|
+        Dir.entries(listing).each do |file|
           next unless file.end_with?('yaml')
           next if file.start_with?('defaults')
           envs << file.chomp!('.yaml')
@@ -111,17 +93,16 @@ module Tapjoy
       end
 
       # Using variables passed in, generate user data file
-      def generate_user_data(config)
+      def generate_user_data(userdata_dir, bootstrap_script, config)
 
         ERB.new(
-          File.new("#{config[:config_dir]}/userdata/#{config[:bootstrap_script]}").read,nil,'-'
+          File.new(File.join(userdata_dir, bootstrap_script)).read, nil, '-'
         ).result(binding)
       end
 
       # Check if we allow clobbering and need to clobber
       def check_clobber(opts, config)
         fail Tapjoy::AutoscalingBootstrap::Errors::ClobberRequired if check_as_clobber(**opts, **config)
-        fail Tapjoy::AutoscalingBootstrap::Errors::ELB::ClobberRequired if check_elb_clobber(**opts, **config)
         puts "We don't need to clobber"
       end
 
@@ -130,41 +111,40 @@ module Tapjoy
         create_as_group && Tapjoy::AutoscalingBootstrap.group.exists && !clobber_as
       end
 
-      # Check ELB clobber
-      def check_elb_clobber(create_elb:, clobber_elb:, **unused_values)
-        elb = Tapjoy::AutoscalingBootstrap::ELB.new
-        create_elb && elb.exists && !clobber_elb
-      end
-
       # Get AWS Environment
       def get_security_groups(config_dir, env, group)
 
         # Check environment file
-        unless File.readable?("#{config_dir}/config/common/#{env}.yaml")
+        unless File.readable?("#{config_dir}/#{env}.yaml")
           fail Tapjoy::AutoscalingBootstrap::Errors::InvalidEnvironment
         end
 
         security_groups = {security_groups: group.split(',')}
       end
 
+      # Clean list of ELBs
+      def elb_list(config)
+        config[:elb].map(&:keys).flatten.join(',')
+      end
+
       # Confirm config settings before running autoscaling code
       def confirm_config(keypair:, zones:, security_groups:, instance_type:,
         image_id:, iam_instance_profile:, prompt:, use_vpc: use_vpc,
-        vpc_subnets: nil, **unused_values)
-
-        elb_name = Tapjoy::AutoscalingBootstrap.elb_name
+        vpc_subnets: nil, has_elb: has_elb, config:, termination_policies:,
+        **unused_values)
 
         puts '  Preparing to configure the following autoscaling group:'
-        puts "  Launch Config:  #{Tapjoy::AutoscalingBootstrap.config_name}"
-        puts "  Auto Scaler:    #{Tapjoy::AutoscalingBootstrap.scaler_name}"
-        puts "  ELB:            #{elb_name}" unless elb_name.eql? 'NaE'
-        puts "  Key Pair:       #{keypair}"
-        puts "  Zones:          #{zones.join(',')}"
-        puts "  Groups:         #{security_groups.sort.join(',')}"
-        puts "  Instance Type:  #{instance_type}"
-        puts "  Image ID:       #{image_id}"
-        puts "  IAM Role:       #{iam_instance_profile}"
-        puts "  VPC Subnets:    #{vpc_subnets}" if use_vpc
+        puts "  Launch Config:        #{Tapjoy::AutoscalingBootstrap.config_name}"
+        puts "  Auto Scaler:          #{Tapjoy::AutoscalingBootstrap.scaler_name}"
+        puts "  ELB:                  #{elb_list(config)}" if has_elb
+        puts "  Key Pair:             #{keypair}"
+        puts "  Zones:                #{zones.join(',')}"
+        puts "  Groups:               #{security_groups.sort.join(',')}"
+        puts "  Instance Type:        #{instance_type}"
+        puts "  Image ID:             #{image_id}"
+        puts "  IAM Role:             #{iam_instance_profile}"
+        puts "  VPC Subnets:          #{vpc_subnets}" if use_vpc
+        puts "  Termination Policies: #{termination_policies.sort.join(',')}"
 
         puts "\n\nNOTE! Continuing may have adverse effects if you end up " \
         "deleting an IN-USE PRODUCTION scaling group. Don't be dumb."
@@ -174,41 +154,41 @@ module Tapjoy
 
       # configure environment
 
-      def configure_environment(filename, env=nil, config_dir)
-        if filename.include?(File::SEPARATOR)
-          facet_file    = filename
-          config_dir   = File.expand_path('../../..', facet_file)
-        else
-          facet_file    = File.join(config_dir, 'config', 'clusters', filename)
-        end
+      def configure_environment(opts)
+        filename = opts[:filename]
+        facet_file    = filename
+        config_dir    = File.expand_path('../..', facet_file)
+        userdata_dir  = "#{File.expand_path('../../..', facet_file)}/userdata"
 
-        common_path   = File.join(config_dir, 'config', 'common')
+        common_path   = File.join(config_dir, 'common')
         defaults_hash = self.load_yaml(File.join(common_path, 'defaults.yaml'))
         facet_hash    = self.load_yaml(facet_file)
-        env         ||= facet_hash[:environment]
-        env         ||= defaults_hash[:environment]
-        Tapjoy::AutoscalingBootstrap.is_valid_env?(config_dir, env)
+        env = opts[:env] || facet_hash[:environment] || defaults_hash[:environment]
+        Tapjoy::AutoscalingBootstrap.valid_env?(common_path, env)
         env_hash      = self.load_yaml(File.join(common_path, "#{env}.yaml"))
 
         new_config = defaults_hash.merge!(env_hash).merge(facet_hash)
         new_config[:config_dir] = config_dir
-        aws_env = self.get_security_groups(config_dir, env, new_config[:group])
+        new_config[:instance_ids] = opts[:instance_ids] if opts.key?(:instance_ids)
+        aws_env = self.get_security_groups(common_path, env, new_config[:group])
+        new_config.merge!(aws_env)
 
+        new_config[:autoscale] = false unless new_config[:scaling_type].eql?('dynamic')
+        new_config[:tags] << {Name: new_config[:name]}
         Tapjoy::AutoscalingBootstrap.scaler_name = "#{new_config[:name]}-group"
         Tapjoy::AutoscalingBootstrap.config_name = "#{new_config[:name]}-config"
         # If there's no ELB, then Not a ELB
-        puts new_config[:elb_name]
-        Tapjoy::AutoscalingBootstrap.elb_name = new_config[:elb_name] || 'NaE'
-        Tapjoy::AutoscalingBootstrap.create_elb = new_config[:create_elb]
-        Tapjoy::AutoscalingBootstrap.elb_list = new_config[:elb_list] || []
-        user_data = self.generate_user_data(new_config)
-        return new_config, aws_env, user_data
+        user_data = self.generate_user_data(userdata_dir,
+          new_config[:bootstrap_script], new_config)
+
+        [new_config, aws_env, user_data]
       end
 
       # Exponential backup
       def aws_wait(tries)
-        puts "Sleeping for #{2 ** tries}..."
-        sleep 2 ** tries
+        backoff_sleep = 2 ** tries
+        puts "Sleeping for #{backoff_sleep}..."
+        sleep backoff_sleep
       end
 
       # Check if security group exists and create it if it does not
