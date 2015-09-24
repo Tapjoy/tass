@@ -37,10 +37,24 @@ when 'create'
 
   config, aws_env, user_data = Tapjoy::AutoscalingBootstrap::Base.new.configure_environment(opts[:filename], opts[:env], opts[:config_dir])
   Aws.config[:region] = config[:aws_region]
-  confirm_config(aws_env, config, opts)
+  # confirm_config(aws_env, config, opts)
+  if config.key?(:elb)
+    config[:elb].each do |elb|
+      elb.each do |elb_name, elb_config|
+        Tapjoy::AutoscalingBootstrap.elb_name = elb_name
+        Tapjoy::AutoscalingBootstrap.create_elb = true
+        elb_hash = {
+          elb_name => config[:default_elb_parameters].merge!(elb[elb_name])
+        }
 
-  Tapjoy::AutoscalingBootstrap::Base.new.check_clobber(opts, config)
-  Tapjoy::AutoscalingBootstrap::AutoscalingGroup.new.create(opts, config, aws_env, user_data)
+        Tapjoy::AutoscalingBootstrap::ELB.new(elb_hash,
+          config[:clobber_elb], config[:zones], config[:security_groups])
+      end
+    end
+  end
+
+  # Tapjoy::AutoscalingBootstrap::Base.new.check_clobber(opts, config)
+  # Tapjoy::AutoscalingBootstrap::AutoscalingGroup.new.create(opts, config, aws_env, user_data)
 when 'update'
   opts = Trollop.options do
     # Set help message
