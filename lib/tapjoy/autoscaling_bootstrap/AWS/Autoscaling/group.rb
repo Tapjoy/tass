@@ -31,7 +31,7 @@ module Tapjoy
             end
 
             def create(zones:, health_check_type: nil, tags:,
-              vpc_subnets: nil, create_elb:, **unused_values)
+              vpc_subnets: nil, **unused_values)
 
               group_hash = {
                 auto_scaling_group_name: Tapjoy::AutoscalingBootstrap.scaler_name,
@@ -43,17 +43,10 @@ module Tapjoy
                 tags: Tapjoy::AutoscalingBootstrap::Autoscaling::Group.new.generate_tags(tags)
               }
 
-              # If we've chosen to explicitly create an ELB and assign to this ASG
-              # OR if we've given it a list of ELBs to join (or both)
-              if create_elb || !Tapjoy::AutoscalingBootstrap.elb_list.empty?
-                group_hash.merge!({
-                  load_balancer_names: Tapjoy::AutoscalingBootstrap.elbs_to_join,
-                  health_check_type: health_check_type,
-                  health_check_grace_period: 300,
-                  })
-              end
-
               self.client.create_auto_scaling_group(**group_hash)
+            end
+
+            def attach_elb
             end
           end
         end

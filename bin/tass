@@ -4,11 +4,10 @@ require 'tapjoy/autoscaling_bootstrap'
 
 def confirm_config(aws_env, misc_config, opts)
   use_vpc = true if misc_config[:vpc_subnets]
-  unless Tapjoy::AutoscalingBootstrap::Base.new.confirm_config(**aws_env,
-    **misc_config, **opts, use_vpc: use_vpc)
-
-    abort('Cannot continue if configuration is not correct.  Please fix.')
-  end
+  has_elb = true if misc_config.key?(:elb)
+  Tapjoy::AutoscalingBootstrap::Base.new.confirm_config(**aws_env,
+    **misc_config, **opts, use_vpc: use_vpc, has_elb: has_elb,
+    config: misc_config)
 end
 
 SUB_COMMANDS = %w(create update audit)
@@ -37,7 +36,14 @@ when 'create'
 
   config, aws_env, user_data = Tapjoy::AutoscalingBootstrap::Base.new.configure_environment(opts[:filename], opts[:env], opts[:config_dir])
   Aws.config[:region] = config[:aws_region]
-  # confirm_config(aws_env, config, opts)
+
+  Tapjoy::AutoscalingBootstrap::Base.new.check_clobber(opts, config)
+  unless confirm_config(aws_env, config, opts)
+    abort('Cannot continue if configuration is not correct.  Please fix.')
+  end
+  Tapjoy::AutoscalingBootstrap::AutoscalingGroup.new.create(opts, config, aws_env, user_data)
+
+
   if config.key?(:elb)
     config[:elb].each do |elb|
       elb.each do |elb_name, elb_config|
@@ -53,8 +59,6 @@ when 'create'
     end
   end
 
-  # Tapjoy::AutoscalingBootstrap::Base.new.check_clobber(opts, config)
-  # Tapjoy::AutoscalingBootstrap::AutoscalingGroup.new.create(opts, config, aws_env, user_data)
 when 'update'
   opts = Trollop.options do
     # Set help message

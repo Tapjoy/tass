@@ -45,9 +45,10 @@ module Tapjoy
         @elb_name = str
       end
 
-      # If you're using AutoscalingBootstrap to join to a list of existing ELBs, that array
-      # goes here. This list can include or not include the provided elb_name, the
-      # array + a custom elb_name will be uniq-ed before being passed to Amazon
+      # If you're using AutoscalingBootstrap to join to a list of existing ELBs,
+      # that array goes here. This list can include or not include the provided
+      # elb_name, the array + a custom elb_name will be uniq-ed before being
+      # passed to Amazon
       def elb_list=(list)
         @elb_list = list
       end
@@ -140,15 +141,20 @@ module Tapjoy
         security_groups = {security_groups: group.split(',')}
       end
 
+      # Clean list of ELBs
+      def elb_list(config)
+        config[:elb].map(&:keys).flatten.join(',')
+      end
+
       # Confirm config settings before running autoscaling code
       def confirm_config(keypair:, zones:, security_groups:, instance_type:,
         image_id:, iam_instance_profile:, prompt:, use_vpc: use_vpc,
-        vpc_subnets: nil, **unused_values)
+        vpc_subnets: nil, has_elb: has_elb, config:, **unused_values)
 
         puts '  Preparing to configure the following autoscaling group:'
         puts "  Launch Config:  #{Tapjoy::AutoscalingBootstrap.config_name}"
         puts "  Auto Scaler:    #{Tapjoy::AutoscalingBootstrap.scaler_name}"
-        puts "  ELB:            #{elb_name}" unless elb_name.eql? 'NaE'
+        puts "  ELB:            #{elb_list(config)}" if has_elb
         puts "  Key Pair:       #{keypair}"
         puts "  Zones:          #{zones.join(',')}"
         puts "  Groups:         #{security_groups.sort.join(',')}"
