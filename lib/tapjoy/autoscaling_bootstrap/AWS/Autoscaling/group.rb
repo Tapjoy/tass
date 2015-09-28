@@ -46,7 +46,11 @@ module Tapjoy
               self.client.create_auto_scaling_group(**group_hash)
             end
 
-            def attach_elb
+            def attach_elb(elb_list)
+              self.client.attach_load_balancers({
+                auto_scaling_group_name: Tapjoy::AutoscalingBootstrap.scaler_name,
+                load_balancer_names: elb_list.split(','),
+              })
             end
           end
         end

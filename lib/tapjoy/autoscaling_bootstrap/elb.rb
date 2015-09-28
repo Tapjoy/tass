@@ -2,9 +2,7 @@ module Tapjoy
   module AutoscalingBootstrap
     # This class configures elastic load balancers
     class ELB
-
       def initialize(elb_hash, clobber_elb, zones, security_groups)
-
         elb_config = build_config(elb_hash, zones, security_groups)
         check_valid_config(elb_config)
 

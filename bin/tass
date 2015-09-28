@@ -14,7 +14,7 @@ SUB_COMMANDS = %w(create update audit)
 Trollop::options do
   usage '[SUB_COMMAND] [options]'
   synopsis "\nConfigures autoscaling groups.\nAvailable subcommands are: #{SUB_COMMANDS}"
-  version "#{File.basename($0)} #{Tapjoy::AutoscalingBootstrap::VERSION} \u00A9 2015 Tapjoy, Inc."
+  version "#{File.basename($PROGRAM_NAME)} #{Tapjoy::AutoscalingBootstrap::VERSION} \u00A9 2015 Tapjoy, Inc."
   stop_on SUB_COMMANDS
 end
 
@@ -43,7 +43,6 @@ when 'create'
   end
   Tapjoy::AutoscalingBootstrap::AutoscalingGroup.new.create(opts, config, aws_env, user_data)
 
-
   if config.key?(:elb)
     config[:elb].each do |elb|
       elb.each do |elb_name, elb_config|
@@ -53,10 +52,13 @@ when 'create'
           elb_name => config[:default_elb_parameters].merge!(elb[elb_name])
         }
 
-        Tapjoy::AutoscalingBootstrap::ELB.new(elb_hash,
-          config[:clobber_elb], config[:zones], config[:security_groups])
+        Tapjoy::AutoscalingBootstrap::ELB.new(
+          elb_hash, config[:clobber_elb], config[:zones],
+          config[:security_groups])
       end
     end
+    elb_list = Tapjoy::AutoscalingBootstrap::Base.new.elb_list(config)
+    Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.attach_elb(elb_list)
   end
 
 when 'update'
@@ -88,7 +90,7 @@ when 'audit'
   config, aws_env, user_data = Tapjoy::AutoscalingBootstrap::Base.new.configure_environment(opts[:filename], opts[:env], opts[:config_dir])
   Aws.config[:region] = config[:aws_region]
 
-  config.merge!(aws_env.merge({user_data: Base64.encode64("#{user_data}")}))
+  config.merge!(aws_env.merge(user_data: Base64.encode64("#{user_data}")))
   Tapjoy::AutoscalingBootstrap::Audit.new(config)
 else
   Trollop.educate

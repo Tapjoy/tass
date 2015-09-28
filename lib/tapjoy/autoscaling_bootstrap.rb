@@ -45,25 +45,6 @@ module Tapjoy
         @elb_name = str
       end
 
-      # If you're using AutoscalingBootstrap to join to a list of existing ELBs,
-      # that array goes here. This list can include or not include the provided
-      # elb_name, the array + a custom elb_name will be uniq-ed before being
-      # passed to Amazon
-      def elb_list=(list)
-        @elb_list = list
-      end
-
-      def elb_list
-        @elb_list ||= []
-      end
-
-      # This is the list of elbs passed to the autoscaling configuration. It will include
-      # the created elb, as well as the specific list of elbs to join. It will call uniq
-      # on the list in case you accidentally specify the same elb twice
-      def elbs_to_join
-        (elb_list + [Tapjoy::AutoscalingBootstrap.elb_name]).uniq
-      end
-
       def policy
         @policy = Tapjoy::AutoscalingBootstrap::Autoscaling::Policy.new
       end
