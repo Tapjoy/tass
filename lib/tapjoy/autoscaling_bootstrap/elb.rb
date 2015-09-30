@@ -8,11 +8,13 @@ module Tapjoy
 
         if exists && clobber_elb
           delete
+          create(elb_config)
         elsif exists
-          return
+          Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.attach_elb(
+            Tapjoy::AutoscalingBootstrap.elb_name)
+        else
+          create(elb_config)
         end
-
-        create(elb_config)
       end
 
       # Build config hash

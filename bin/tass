@@ -47,7 +47,6 @@ when 'create'
     config[:elb].each do |elb|
       elb.each do |elb_name, elb_config|
         Tapjoy::AutoscalingBootstrap.elb_name = elb_name
-        Tapjoy::AutoscalingBootstrap.create_elb = true
         elb_hash = {
           elb_name => config[:default_elb_parameters].merge!(elb[elb_name])
         }
@@ -57,8 +56,6 @@ when 'create'
           config[:security_groups])
       end
     end
-    elb_list = Tapjoy::AutoscalingBootstrap::Base.new.elb_list(config)
-    Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.attach_elb(elb_list)
   end
 
 when 'update'
