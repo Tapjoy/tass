@@ -45,24 +45,6 @@ module Tapjoy
         @elb_name = str
       end
 
-      # If you're using AutoscalingBootstrap to join to a list of existing ELBs, that array
-      # goes here. This list can include or not include the provided elb_name, the
-      # array + a custom elb_name will be uniq-ed before being passed to Amazon
-      def elb_list=(list)
-        @elb_list = list
-      end
-
-      def elb_list
-        @elb_list ||= []
-      end
-
-      # This is the list of elbs passed to the autoscaling configuration. It will include
-      # the created elb, as well as the specific list of elbs to join. It will call uniq
-      # on the list in case you accidentally specify the same elb twice
-      def elbs_to_join
-        (elb_list + [Tapjoy::AutoscalingBootstrap.elb_name]).uniq
-      end
-
       def policy
         @policy = Tapjoy::AutoscalingBootstrap::Autoscaling::Policy.new
       end
@@ -121,19 +103,12 @@ module Tapjoy
       # Check if we allow clobbering and need to clobber
       def check_clobber(opts, config)
         fail Tapjoy::AutoscalingBootstrap::Errors::ClobberRequired if check_as_clobber(**opts, **config)
-        fail Tapjoy::AutoscalingBootstrap::Errors::ELB::ClobberRequired if check_elb_clobber(**opts, **config)
         puts "We don't need to clobber"
       end
 
       # Check autoscaling clobber
       def check_as_clobber(create_as_group:, clobber_as:, **unused_values)
         create_as_group && Tapjoy::AutoscalingBootstrap.group.exists && !clobber_as
-      end
-
-      # Check ELB clobber
-      def check_elb_clobber(create_elb:, clobber_elb:, **unused_values)
-        elb = Tapjoy::AutoscalingBootstrap::ELB.new
-        create_elb && elb.exists && !clobber_elb
       end
 
       # Get AWS Environment
@@ -147,17 +122,20 @@ module Tapjoy
         security_groups = {security_groups: group.split(',')}
       end
 
+      # Clean list of ELBs
+      def elb_list(config)
+        config[:elb].map(&:keys).flatten.join(',')
+      end
+
       # Confirm config settings before running autoscaling code
       def confirm_config(keypair:, zones:, security_groups:, instance_type:,
         image_id:, iam_instance_profile:, prompt:, use_vpc: use_vpc,
-        vpc_subnets: nil, **unused_values)
-
-        elb_name = Tapjoy::AutoscalingBootstrap.elb_name
+        vpc_subnets: nil, has_elb: has_elb, config:, **unused_values)
 
         puts '  Preparing to configure the following autoscaling group:'
         puts "  Launch Config:  #{Tapjoy::AutoscalingBootstrap.config_name}"
         puts "  Auto Scaler:    #{Tapjoy::AutoscalingBootstrap.scaler_name}"
-        puts "  ELB:            #{elb_name}" unless elb_name.eql? 'NaE'
+        puts "  ELB:            #{elb_list(config)}" if has_elb
         puts "  Key Pair:       #{keypair}"
         puts "  Zones:          #{zones.join(',')}"
         puts "  Groups:         #{security_groups.sort.join(',')}"
@@ -193,14 +171,11 @@ module Tapjoy
         new_config = defaults_hash.merge!(env_hash).merge(facet_hash)
         new_config[:config_dir] = config_dir
         aws_env = self.get_security_groups(config_dir, env, new_config[:group])
+        new_config.merge!(aws_env)
 
         Tapjoy::AutoscalingBootstrap.scaler_name = "#{new_config[:name]}-group"
         Tapjoy::AutoscalingBootstrap.config_name = "#{new_config[:name]}-config"
         # If there's no ELB, then Not a ELB
-        puts new_config[:elb_name]
-        Tapjoy::AutoscalingBootstrap.elb_name = new_config[:elb_name] || 'NaE'
-        Tapjoy::AutoscalingBootstrap.create_elb = new_config[:create_elb]
-        Tapjoy::AutoscalingBootstrap.elb_list = new_config[:elb_list] || []
         user_data = self.generate_user_data(new_config)
         return new_config, aws_env, user_data
       end
