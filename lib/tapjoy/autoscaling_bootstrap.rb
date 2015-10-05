@@ -130,19 +130,21 @@ module Tapjoy
       # Confirm config settings before running autoscaling code
       def confirm_config(keypair:, zones:, security_groups:, instance_type:,
         image_id:, iam_instance_profile:, prompt:, use_vpc: use_vpc,
-        vpc_subnets: nil, has_elb: has_elb, config:, **unused_values)
+        vpc_subnets: nil, has_elb: has_elb, config:, termination_policies:,
+        **unused_values)
 
         puts '  Preparing to configure the following autoscaling group:'
-        puts "  Launch Config:  #{Tapjoy::AutoscalingBootstrap.config_name}"
-        puts "  Auto Scaler:    #{Tapjoy::AutoscalingBootstrap.scaler_name}"
-        puts "  ELB:            #{elb_list(config)}" if has_elb
-        puts "  Key Pair:       #{keypair}"
-        puts "  Zones:          #{zones.join(',')}"
-        puts "  Groups:         #{security_groups.sort.join(',')}"
-        puts "  Instance Type:  #{instance_type}"
-        puts "  Image ID:       #{image_id}"
-        puts "  IAM Role:       #{iam_instance_profile}"
-        puts "  VPC Subnets:    #{vpc_subnets}" if use_vpc
+        puts "  Launch Config:        #{Tapjoy::AutoscalingBootstrap.config_name}"
+        puts "  Auto Scaler:          #{Tapjoy::AutoscalingBootstrap.scaler_name}"
+        puts "  ELB:                  #{elb_list(config)}" if has_elb
+        puts "  Key Pair:             #{keypair}"
+        puts "  Zones:                #{zones.join(',')}"
+        puts "  Groups:               #{security_groups.sort.join(',')}"
+        puts "  Instance Type:        #{instance_type}"
+        puts "  Image ID:             #{image_id}"
+        puts "  IAM Role:             #{iam_instance_profile}"
+        puts "  VPC Subnets:          #{vpc_subnets}" if use_vpc
+        puts "  Termination Policies: #{termination_policies.sort.join(',')}"
 
         puts "\n\nNOTE! Continuing may have adverse effects if you end up " \
         "deleting an IN-USE PRODUCTION scaling group. Don't be dumb."
