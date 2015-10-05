@@ -33,3 +33,5 @@
 
 :aws_region:                     us-east-1
 :tags:                           #intentionally left empty
+:termination_policies:
+  - NewestInstance
