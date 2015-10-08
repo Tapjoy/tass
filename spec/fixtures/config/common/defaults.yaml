@@ -35,3 +35,4 @@
 :tags:                           #intentionally left empty
 :termination_policies:
   - NewestInstance
+:scaling_type:                   dynamic

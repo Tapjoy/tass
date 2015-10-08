@@ -39,12 +39,6 @@ There are several config files used for this application, broken out into a few 
     * config/clusters/<cluster_name>.yaml
 * Userdata
 
-### Environment variables
-
-If set, $TASS_CONFIG_DIR will override the default config directory (which is used for both instance configuration and userdata, as listed in following sections).
-
-If unset, the default configuration directory is $HOME/.tass
-
 ### Instance configuration
 
 For information on configuration options, please reference [Configuration Options] (docs/CONFIG_OPTIONS.md)
