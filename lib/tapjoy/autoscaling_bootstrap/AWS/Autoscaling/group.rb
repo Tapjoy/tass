@@ -31,14 +31,14 @@ module Tapjoy
             end
 
             def create(zones:, health_check_type: nil, tags:,
-              vpc_subnets: nil, **unused_values)
+              vpc_subnets: nil, termination_policies: , **unused_values)
 
               group_hash = {
                 auto_scaling_group_name: Tapjoy::AutoscalingBootstrap.scaler_name,
                 availability_zones: zones,
                 launch_configuration_name: Tapjoy::AutoscalingBootstrap.config_name,
                 min_size: 0, max_size: 0, desired_capacity: 0,
-                termination_policies: ['OldestInstance'],
+                termination_policies: termination_policies,
                 vpc_zone_identifier: vpc_subnets,
                 tags: Tapjoy::AutoscalingBootstrap::Autoscaling::Group.new.generate_tags(tags)
               }

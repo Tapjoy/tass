@@ -65,9 +65,8 @@ module Tapjoy
         @config_dir ||= ENV['TASS_CONFIG_DIR'] || "#{ENV['HOME']}/.tass"
       end
 
-      def is_valid_env?(config_dir, env)
-        env_list = self.supported_envs(config_dir)
-        puts config_dir
+      def valid_env?(config_dir, env)
+        env_list = supported_envs(config_dir)
         unless env_list.include?(env)
           Trollop.die :env, "Currently supported enviroments are #{env_list.join(',')}"
         end
@@ -75,7 +74,7 @@ module Tapjoy
 
       def supported_envs(listing)
         envs = []
-        Dir.entries("#{listing}/config/common").each do |file|
+        Dir.entries(listing).each do |file|
           next unless file.end_with?('yaml')
           next if file.start_with?('defaults')
           envs << file.chomp!('.yaml')
@@ -93,10 +92,10 @@ module Tapjoy
       end
 
       # Using variables passed in, generate user data file
-      def generate_user_data(config)
+      def generate_user_data(userdata_dir, bootstrap_script, config)
 
         ERB.new(
-          File.new("#{config[:config_dir]}/userdata/#{config[:bootstrap_script]}").read,nil,'-'
+          File.new(File.join(userdata_dir, bootstrap_script)).read, nil, '-'
         ).result(binding)
       end
 
@@ -115,7 +114,7 @@ module Tapjoy
       def get_security_groups(config_dir, env, group)
 
         # Check environment file
-        unless File.readable?("#{config_dir}/config/common/#{env}.yaml")
+        unless File.readable?("#{config_dir}/#{env}.yaml")
           fail Tapjoy::AutoscalingBootstrap::Errors::InvalidEnvironment
         end
 
@@ -130,19 +129,21 @@ module Tapjoy
       # Confirm config settings before running autoscaling code
       def confirm_config(keypair:, zones:, security_groups:, instance_type:,
         image_id:, iam_instance_profile:, prompt:, use_vpc: use_vpc,
-        vpc_subnets: nil, has_elb: has_elb, config:, **unused_values)
+        vpc_subnets: nil, has_elb: has_elb, config:, termination_policies:,
+        **unused_values)
 
         puts '  Preparing to configure the following autoscaling group:'
-        puts "  Launch Config:  #{Tapjoy::AutoscalingBootstrap.config_name}"
-        puts "  Auto Scaler:    #{Tapjoy::AutoscalingBootstrap.scaler_name}"
-        puts "  ELB:            #{elb_list(config)}" if has_elb
-        puts "  Key Pair:       #{keypair}"
-        puts "  Zones:          #{zones.join(',')}"
-        puts "  Groups:         #{security_groups.sort.join(',')}"
-        puts "  Instance Type:  #{instance_type}"
-        puts "  Image ID:       #{image_id}"
-        puts "  IAM Role:       #{iam_instance_profile}"
-        puts "  VPC Subnets:    #{vpc_subnets}" if use_vpc
+        puts "  Launch Config:        #{Tapjoy::AutoscalingBootstrap.config_name}"
+        puts "  Auto Scaler:          #{Tapjoy::AutoscalingBootstrap.scaler_name}"
+        puts "  ELB:                  #{elb_list(config)}" if has_elb
+        puts "  Key Pair:             #{keypair}"
+        puts "  Zones:                #{zones.join(',')}"
+        puts "  Groups:               #{security_groups.sort.join(',')}"
+        puts "  Instance Type:        #{instance_type}"
+        puts "  Image ID:             #{image_id}"
+        puts "  IAM Role:             #{iam_instance_profile}"
+        puts "  VPC Subnets:          #{vpc_subnets}" if use_vpc
+        puts "  Termination Policies: #{termination_policies.sort.join(',')}"
 
         puts "\n\nNOTE! Continuing may have adverse effects if you end up " \
         "deleting an IN-USE PRODUCTION scaling group. Don't be dumb."
@@ -152,32 +153,31 @@ module Tapjoy
 
       # configure environment
 
-      def configure_environment(filename, env=nil, config_dir)
-        if filename.include?(File::SEPARATOR)
-          facet_file    = filename
-          config_dir   = File.expand_path('../../..', facet_file)
-        else
-          facet_file    = File.join(config_dir, 'config', 'clusters', filename)
-        end
+      def configure_environment(filename, env=nil)
+        facet_file    = filename
+        config_dir    = File.expand_path('../..', facet_file)
+        userdata_dir  = "#{File.expand_path('../../..', facet_file)}/userdata"
 
-        common_path   = File.join(config_dir, 'config', 'common')
+        common_path   = File.join(config_dir, 'common')
         defaults_hash = self.load_yaml(File.join(common_path, 'defaults.yaml'))
         facet_hash    = self.load_yaml(facet_file)
         env         ||= facet_hash[:environment]
         env         ||= defaults_hash[:environment]
-        Tapjoy::AutoscalingBootstrap.is_valid_env?(config_dir, env)
+        Tapjoy::AutoscalingBootstrap.valid_env?(common_path, env)
         env_hash      = self.load_yaml(File.join(common_path, "#{env}.yaml"))
 
         new_config = defaults_hash.merge!(env_hash).merge(facet_hash)
         new_config[:config_dir] = config_dir
-        aws_env = self.get_security_groups(config_dir, env, new_config[:group])
+        aws_env = self.get_security_groups(common_path, env, new_config[:group])
         new_config.merge!(aws_env)
 
         Tapjoy::AutoscalingBootstrap.scaler_name = "#{new_config[:name]}-group"
         Tapjoy::AutoscalingBootstrap.config_name = "#{new_config[:name]}-config"
         # If there's no ELB, then Not a ELB
-        user_data = self.generate_user_data(new_config)
-        return new_config, aws_env, user_data
+        user_data = self.generate_user_data(userdata_dir,
+          new_config[:bootstrap_script], new_config)
+
+        [new_config, aws_env, user_data]
       end
 
       # Exponential backup

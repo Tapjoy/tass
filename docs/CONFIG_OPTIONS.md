@@ -13,7 +13,6 @@
 :elb_port:                       # (Int) Port ELB listens on
 :create_elb:                     # (Boolean) Whether or not to create an ELB associated with the autoscaling group
 :clobber_elb:                    # (Boolean) Whether or not to force ELB creation, clobbering existing ELB if any
-:elb_list:                       # (Array) List of ELB names to have the Autoscale Group join. This will automatically include anything set in :elb_name:, but will not create them if they do not exist
 
 # Scaling Parameters
 :autoscale:                      # (Boolean) Whether or not to configure automatic autoscaling on the autoscaling group
@@ -44,4 +43,6 @@
 :vpc_subnets:                    # (String) Comma-separated list of VPC subnets to assign to autoscaler (valid for VPC instances only)
 :classic_link_vpc_id:            # (String) VPC id to use for ClassicLink (valid for EC2-Classic instances only)
 :classic_link_sg_ids:            # (String Array) VPC subnets to use for ClassicLink (valid for EC2-Classic instances only)
+:termination_policies:           # (String Array) List of termination policies to apply to autoscaler (reference AWS documentation for further info)
+:default_elb_parameters:         # (Hash) Hash that holds default elb configuration parameters (as documented in this file)
 ```
