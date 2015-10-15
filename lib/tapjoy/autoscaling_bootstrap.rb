@@ -30,6 +30,7 @@ require_relative 'autoscaling_bootstrap/autoscaling_group'
 require_relative 'autoscaling_bootstrap/launch_configuration'
 require_relative 'autoscaling_bootstrap/version'
 require_relative 'autoscaling_bootstrap/audit'
+require_relative 'autoscaling_bootstrap/ec2'
 
 module Tapjoy
   # Module for Autoscaling Bootstrap
@@ -153,7 +154,9 @@ module Tapjoy
 
       # configure environment
 
-      def configure_environment(filename, env=nil)
+      def configure_environment(opts)
+        filename = opts[:filename]
+        env = opts[:env] if opts.key?(:env)
         facet_file    = filename
         config_dir    = File.expand_path('../..', facet_file)
         userdata_dir  = "#{File.expand_path('../../..', facet_file)}/userdata"
@@ -168,6 +171,7 @@ module Tapjoy
 
         new_config = defaults_hash.merge!(env_hash).merge(facet_hash)
         new_config[:config_dir] = config_dir
+        new_config[:instance_ids] = opts[:instance_ids] if opts.key?(:instance_ids)
         aws_env = self.get_security_groups(common_path, env, new_config[:group])
         new_config.merge!(aws_env)
 
@@ -182,8 +186,9 @@ module Tapjoy
 
       # Exponential backup
       def aws_wait(tries)
-        puts "Sleeping for #{2 ** tries}..."
-        sleep 2 ** tries
+        backoff_sleep = 2 ** tries
+        puts "Sleeping for #{backoff_sleep}..."
+        sleep backoff_sleep
       end
 
       # Check if security group exists and create it if it does not

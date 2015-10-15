@@ -9,11 +9,10 @@ module Tapjoy
               @client ||= Tapjoy::AutoscalingBootstrap::AWS::Autoscaling.client
             end
 
-            def resize(min_size: 0, max_size: 0, desired_capacity:0)
+            def resize(min: 0, max: 0, desired:0)
               self.client.update_auto_scaling_group(
                 auto_scaling_group_name: Tapjoy::AutoscalingBootstrap.scaler_name,
-                min_size: min_size, max_size: max_size,
-                desired_capacity: desired_capacity)
+                min_size: min, max_size: max, desired_capacity: desired)
             end
 
             def delete(force_delete: true)
@@ -28,6 +27,14 @@ module Tapjoy
                   Tapjoy::AutoscalingBootstrap.scaler_name
                 ]
               )[0][0]
+            end
+
+            def detach
+              self.client.detach_instances(
+                instance_ids: describe.instances.map(&:instance_id),
+                auto_scaling_group_name: Tapjoy::AutoscalingBootstrap.scaler_name,
+                should_decrement_desired_capacity: true,
+              )
             end
 
             def create(zones:, health_check_type: nil, tags:,

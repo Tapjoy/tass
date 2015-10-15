@@ -20,4 +20,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency('activesupport', '~> 4.2')
   s.add_development_dependency('webmock', '~> 1.20')
   s.add_development_dependency('vcr', '~> 2.9')
+  s.add_development_dependency('rspec_junit_formatter', '0.2.2')
 end

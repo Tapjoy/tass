@@ -10,12 +10,10 @@ module BootstrapHelper
     let(:elb_name)                { 'test-elb' }
     let(:cluster_filename)        { 'spec/fixtures/config/clusters/test_cluster.yaml' }
     let(:opts)                    {
-      {env: 'qa', filename: cluster_filename}
+      {env: 'qa', filename: cluster_filename, instance_ids:%w(i-a9d85a7d i-91db522e)}
     }
     let(:facet_hash)              { util.load_yaml(cluster_filename) }
-    let(:environment)             {
-      util.configure_environment(opts[:filename], opts[:env])
-    }
+    let(:environment)             { util.configure_environment(opts) }
     let(:new_config)              { environment[0] }
     let(:aws_env)                 { environment[1] }
     let(:user_data)               { environment[2] }
@@ -30,9 +28,9 @@ module BootstrapHelper
       @opts = {
         env:        'qa',
         filename:   @cluster_filename,
+        instance_ids: %w(i-a9d85a7d i-91db522e)
       }
-      @environment = @util.configure_environment(
-        @opts[:filename], @opts[:env])
+      @environment = @util.configure_environment(@opts)
       @elb_hash = {
         @elb_name => @environment.first[:default_elb_parameters].merge!(elb_port: 80)
       }
