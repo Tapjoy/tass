@@ -10,7 +10,7 @@ module BootstrapHelper
     let(:elb_name)                { 'test-elb' }
     let(:cluster_filename)        { 'spec/fixtures/config/clusters/test_cluster.yaml' }
     let(:opts)                    {
-      {env: 'qa', filename: cluster_filename, instance_ids:%w(i-a9d85a7d i-91db522e)}
+      {env: 'qa', filename: cluster_filename}
     }
     let(:facet_hash)              { util.load_yaml(cluster_filename) }
     let(:environment)             { util.configure_environment(opts) }
@@ -27,8 +27,7 @@ module BootstrapHelper
       @cluster_filename = './spec/fixtures/config/clusters/test_cluster.yaml'
       @opts = {
         env:        'qa',
-        filename:   @cluster_filename,
-        instance_ids: %w(i-a9d85a7d i-91db522e)
+        filename:   @cluster_filename
       }
       @environment = @util.configure_environment(@opts)
       @elb_hash = {

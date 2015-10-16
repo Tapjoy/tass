@@ -12,7 +12,7 @@ module Tapjoy
 
         # Create autoscaling policy
         def create(policy, scale)
-          return unless Tapjoy::AutoscalingBootstrap.group.exists
+          fail Tapjoy::AutoscalingBootstrap::Errors::InvalidAutoscalingGroup unless Tapjoy::AutoscalingBootstrap.group.exists
           Tapjoy::AutoscalingBootstrap::AWS::Autoscaling.put_scaling_policy(
             policy_name: policy, **scale)
         end
