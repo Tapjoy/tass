@@ -156,7 +156,7 @@ module Tapjoy
 
       def configure_environment(opts)
         filename = opts[:filename]
-        env = opts[:env] if opts.key?(:env)
+        env = opts[:env] || facet_hash[:environment] || defaults_hash[:environment]
         facet_file    = filename
         config_dir    = File.expand_path('../..', facet_file)
         userdata_dir  = "#{File.expand_path('../../..', facet_file)}/userdata"
@@ -164,8 +164,6 @@ module Tapjoy
         common_path   = File.join(config_dir, 'common')
         defaults_hash = self.load_yaml(File.join(common_path, 'defaults.yaml'))
         facet_hash    = self.load_yaml(facet_file)
-        env         ||= facet_hash[:environment]
-        env         ||= defaults_hash[:environment]
         Tapjoy::AutoscalingBootstrap.valid_env?(common_path, env)
         env_hash      = self.load_yaml(File.join(common_path, "#{env}.yaml"))
 

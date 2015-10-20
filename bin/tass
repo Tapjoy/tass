@@ -92,7 +92,7 @@ when 'audit'
 when 'scale'
   opts = Trollop.options do
     usage 'scale [options]'
-    synopsis 'This command is used to scale up auto scaling groups'
+    synopsis 'This command is used to scale up/down auto scaling groups'
     common_args
     opt :instance_ids, 'Instance IDs to scale down', type: :strings
   end
