@@ -98,6 +98,7 @@ when 'scale'
   end
 
   config, aws_env, user_data = configure_environment(opts)
+  Tapjoy::AutoscalingBootstrap::Autoscaling::Group.new.scale(config)
 else
   Trollop.educate
 end
