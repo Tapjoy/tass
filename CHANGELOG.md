@@ -1,3 +1,15 @@
+v1.0.0
+==
+#### Enhancement
+* PR [#13](https://github.com/Tapjoy/tass/pull/13): Create a new workflow around ELBs, to allow multiple ELBs to be attached to an auto scaling group without requiring management of each ELB.
+* PR [#14](https://github.com/Tapjoy/tass/pull/14): Remove $CONFIG_DIR options, now traverse the path relative to the specified config file.  Additionally, set the termination policy for the auto scaling groups to be set via config file rather than hard-coded.
+* PR [#15](https://github.com/Tapjoy/tass/pull/14): Allow configurations of static and dynamic auto scaling groups.  Also, fix the specs to be more accurate to the proper code flow and reduce false errors.
+
+v0.2.2
+==
+#### Enhancement
+* PR [#12](https://github.com/Tapjoy/tass/pull/12): Adding support to specify a custom list of elbs for an autoscaling group to add itself to
+
 v0.2.1
 ==
 #### Bug Fixes
