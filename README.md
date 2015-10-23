@@ -71,7 +71,6 @@ Usage: tass create [options]
 
 Options:
   -f, --filename=<s>           Specify config file to load
-  --config-dir=<s>             Specify the directory for configuration files (default: $HOME/.autoscaling_bootstrap)
   -e, --env=<s>                Specify which environment config to load
   --clobber-elb                Force ELB creation
   --clobber-as                 Force AS group creation
@@ -88,7 +87,6 @@ Usage: tass update [options]
 
 Options:
   -f, --filename=<s>           Specify config file to load
-  --config-dir=<s>             Specify the directory for configuration files (default: /Users/ali/.autoscaling_bootstrap)
   -e, --env=<s>                Specify which environment config to load
   -p, --prompt, --no-prompt    Enable/disable prompts (default: true)
   -h, --help                   Show this message
@@ -103,8 +101,20 @@ Usage: tass audit
 
 Options:
   -f, --filename=<s>           Specify config file to load
-  --config-dir=<s>             Specify the directory for configuration files (default: /Users/ali/.autoscaling_bootstrap)
   -e, --env=<s>                Specify which environment config to load
   -p, --prompt, --no-prompt    Enable/disable prompts (default: true)
+  -h, --help                   Show this message
+```
+
+### scale
+
+This command is used to scale up/down auto scaling groups
+
+```
+Options:
+  -f, --filename=<s>           Specify config file to load
+  -p, --prompt, --no-prompt    Enable/disable prompts (default: true)
+  -e, --env=<s>                Specify which environment config to load
+  -i, --instance-ids=<s+>      Instance IDs to scale down
   -h, --help                   Show this message
 ```
