@@ -9,6 +9,10 @@ describe Tapjoy::AutoscalingBootstrap::Alerts::Scaling, :vcr do
     })}
 
   it 'creates scaling alerts', :alerts => 'create_alarm' do
+    unless Tapjoy::AutoscalingBootstrap.group.exists
+      asg = Tapjoy::AutoscalingBootstrap::Autoscaling::Group.new
+      asg.create(config: new_config, aws_env: aws_env, user_data: user_data)
+    end
     expect{Tapjoy::AutoscalingBootstrap::Alerts::Scaling.new(
       config,
     )}.to_not raise_error

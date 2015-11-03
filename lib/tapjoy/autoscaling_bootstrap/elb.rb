@@ -2,16 +2,32 @@ module Tapjoy
   module AutoscalingBootstrap
     # This class configures elastic load balancers
     class ELB
-      # Initialize the class
-      def initialize
+      def initialize(elb_hash, clobber_elb, zones, security_groups)
+        elb_config = build_config(elb_hash, zones, security_groups)
+        check_valid_config(elb_config)
+
+        if exists && clobber_elb
+          delete
+          create(elb_config)
+        elsif exists
+          Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.attach_elb(
+            Tapjoy::AutoscalingBootstrap.elb_name)
+        else
+          create(elb_config)
+        end
+      end
+
+      # Build config hash
+      def build_config(elb_hash, zones, security_groups)
+        elb_config = elb_hash[Tapjoy::AutoscalingBootstrap.elb_name]
+        elb_config[:elb_protocol] ||= elb_config[:instance_protocol]
+        elb_config[:elb_health_target] ||= "#{elb_config[:instance_protocol]}:#{elb_config[:instance_port]}/healthz"
+        elb_config.merge!({zones: zones, groups: security_groups})
       end
 
       # Create load balancer
-      def create(config, aws_env)
-
-        check_valid_config(config)
-        delete if exists
-        Tapjoy::AutoscalingBootstrap::AWS::ELB.create(**config, **aws_env)
+      def create(config)
+        Tapjoy::AutoscalingBootstrap::AWS::ELB.create(**config)
         health_check(config)
       end
 

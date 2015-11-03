@@ -61,7 +61,59 @@ module Tapjoy
           tag_array
         end
 
+        # Scale auto scaling groups
+        def scale(config)
+          if config[:scaling_type].eql?('dynamic')
+            Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.resize(
+              **config[:instance_counts])
+          elsif config[:scaling_type].eql?('static')
+            scale_static(config)
+          else
+            abort('Unknown scaling type')
+          end
+        end
+
         private
+
+        # Logic for scaling static clusters
+        def scale_static(config)
+          current_count = Tapjoy::AutoscalingBootstrap::EC2.count_static_instances(config)
+          count_delta = config[:instance_counts][:desired] - current_count
+          if count_delta < 0
+            count_delta = count_delta.abs
+            puts "Scaling #{count_delta} instances down"
+            abort('Instances to terminate must be specified') unless config.key?(:instance_ids)
+            unless config[:instance_ids].length.eql?(count_delta)
+              fail Tapjoy::AutoscalingBootstrap::Errors::IncorrectNumberIds
+            end
+            disable_termination_protection(config[:instance_ids])
+            Tapjoy::AutoscalingBootstrap::AWS::EC2.terminate_instances(config[:instance_ids])
+          elsif count_delta > 0
+            puts 'Scaling up...'
+            puts count_delta
+            Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.resize(
+              min: 0, max: count_delta, desired: count_delta)
+            wait_for_asg_to_populate(config[:instance_counts][:desired], config)
+            enable_termination_protection
+            Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.detach
+          else
+            puts 'No action needed'
+          end
+        end
+
+        # Helper method to disable termination protection
+        def disable_termination_protection(instance_ids)
+          instance_ids.each do |instance|
+            Tapjoy::AutoscalingBootstrap::EC2.disable_termination_protection(instance)
+          end
+        end
+        # Helper method to enable termination protection
+        def enable_termination_protection
+          asg = Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.describe
+          asg.instances.map(&:instance_id).each do |instance|
+            Tapjoy::AutoscalingBootstrap::EC2.enable_termination_protection(instance)
+          end
+        end
 
         # Clear out existing autoscaling group
         def zero_autoscale_group
@@ -105,6 +157,17 @@ module Tapjoy
             puts "Waiting for auto scaling group to remove itself (#{tries + 1} of 5)..."
             break unless exists
             Tapjoy::AutoscalingBootstrap::Base.new.aws_wait(tries)
+          end
+        end
+
+        # Wait for ASG to populate
+        def wait_for_asg_to_populate(desired, config)
+          current_count = Tapjoy::AutoscalingBootstrap::EC2.count_static_instances(config)
+          tries = 0
+          until current_count.eql?(desired) do
+            tries += 1
+            Tapjoy::AutoscalingBootstrap::Base.new.aws_wait(tries)
+            current_count = Tapjoy::AutoscalingBootstrap::EC2.count_static_instances(config)
           end
         end
       end

@@ -3,25 +3,7 @@ module Tapjoy
     # This class is the central launching point for new autoscaling group creation
     class AutoscalingGroup
       # Initialize the class
-      def create(opts, new_config, aws_env, user_data,
-
-        # ELB Parameters
-        elb_health_target: "#{new_config[:instance_protocol]}:#{new_config[:instance_port]}/healthz",
-        elb_protocol: new_config[:instance_protocol],
-        elb_name: "#{new_config[:name].gsub('_','-')}-discovery"
-      )
-
-        if new_config[:create_elb]
-          new_config.merge!({
-            elb_health_target: elb_health_target,
-            elb_protocol:      elb_protocol,
-            elb_name:          elb_name
-          })
-
-          Tapjoy::AutoscalingBootstrap::ELB.new.create(new_config, aws_env)
-        else
-          puts "\nNo ELB required"
-        end
+      def create(opts, new_config, aws_env, user_data)
 
         Tapjoy::AutoscalingBootstrap::ConfigureAutoscalers.new(**new_config,
           aws_env: aws_env, user_data: user_data, misc_config: new_config)

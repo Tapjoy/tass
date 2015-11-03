@@ -25,6 +25,15 @@ module Tapjoy
           abort("ERROR: Specified autoscaling group doesn't exist")
         end
       end
+
+      # Raise if an incorrect number of instance ids have been specified
+      class IncorrectNumberIds < ArgumentError
+        def initialize
+          error = 'Number of instance IDs specified must match the number '\
+          'of instances scaled down'
+          abort(error)
+        end
+      end
     end
   end
 end

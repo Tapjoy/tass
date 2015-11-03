@@ -3,6 +3,7 @@
 :bootstrap_script:               # (String) Name of userdata script
 
 # ELB Parameters
+:default_elb_parameters:         # (Hash) Hash that holds default elb configuration parameters (as follows)
 :instance_protocol:              # (String) Protocol that instance listens on
 :instance_port:                  # (Int) Port number that instance listens on
 :elb_health_interval:            # (Int) ELB health check interval in minutes
@@ -13,7 +14,6 @@
 :elb_port:                       # (Int) Port ELB listens on
 :create_elb:                     # (Boolean) Whether or not to create an ELB associated with the autoscaling group
 :clobber_elb:                    # (Boolean) Whether or not to force ELB creation, clobbering existing ELB if any
-:elb_list:                       # (Array) List of ELB names to have the Autoscale Group join. This will automatically include anything set in :elb_name:, but will not create them if they do not exist
 
 # Scaling Parameters
 :autoscale:                      # (Boolean) Whether or not to configure automatic autoscaling on the autoscaling group
@@ -44,4 +44,11 @@
 :vpc_subnets:                    # (String) Comma-separated list of VPC subnets to assign to autoscaler (valid for VPC instances only)
 :classic_link_vpc_id:            # (String) VPC id to use for ClassicLink (valid for EC2-Classic instances only)
 :classic_link_sg_ids:            # (String Array) VPC subnets to use for ClassicLink (valid for EC2-Classic instances only)
+:termination_policies:           # (String Array) List of termination policies to apply to autoscaler (reference AWS documentation for further info)
+
+:scaling_type:                   # (String) Type of scaling group to create.  At this time, the value should either be 'dynamic' or 'static'.
+:instance_counts:                # (Int Hash) Contains the instance counts for the autoscaling group
+:min:                            # (Int) Key/value pair in the instance_counts hash, lists the minimum count required for a dynamic auto scaling group
+:max:                            # (Int) Key/value pair in the instance_counts hash, lists the maximum count required for a dynamic auto scaling group
+:desired:                        # (Int) Key/value pair in the instance_counts hash, lists the desired instance count for an auto scaling group.  In addition to applying to dynamic groups, this is the only count that is used for static groups.
 ```

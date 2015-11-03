@@ -4,15 +4,15 @@
 :bootstrap_script:               bootstrap-chef.sh.erb
 
 # ELB Parameters
-:instance_protocol:              http
-:instance_port:                  80
-:elb_health_interval:            15
-:elb_health_timeout:             5
-:elb_unhealthy_threshold:        2
-:elb_healthy_threshold:          2
-:elb_port:                       nil
-:create_elb:                     false
-:clobber_elb:                    false
+:default_elb_parameters:
+  :instance_protocol:              http
+  :instance_port:                  80
+  :elb_health_interval:            15
+  :elb_health_timeout:             5
+  :elb_unhealthy_threshold:        2
+  :elb_healthy_threshold:          2
+  :elb_port:                       nil
+  :clobber_elb:                    false
 
 
 # Scaling Parameters
@@ -33,3 +33,6 @@
 
 :aws_region:                     us-east-1
 :tags:                           #intentionally left empty
+:termination_policies:
+  - NewestInstance
+:scaling_type:                   dynamic
