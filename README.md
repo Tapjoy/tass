@@ -65,6 +65,7 @@ Userdata configuration files are ERB templates located in the userdata config di
 ### create
 
 This command creates new autoscaling groups, and overwrites existing ones.
+NOTE: `--env` has been deprecated and will be removed in a future version
 
 ```
 Usage: tass create [options]
@@ -81,6 +82,7 @@ Options:
 ### update
 
 This command creates new launch configurations based on existing autoscaling groups using local instance configuration files as overrides.
+NOTE: `--env` has been deprecated and will be removed in a future version
 
 ```
 Usage: tass update [options]
@@ -95,6 +97,7 @@ Options:
 ### audit
 
 This command compares local configuration files for a given cluster to the existing launch configuration and autoscaling group running in AWS.
+NOTE: `--env` has been deprecated and will be removed in a future version
 
 ```
 Usage: tass audit
@@ -109,6 +112,7 @@ Options:
 ### scale
 
 This command is used to scale up/down auto scaling groups
+NOTE: `--env` has been deprecated and will be removed in a future version
 
 ```
 Options:
