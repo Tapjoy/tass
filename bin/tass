@@ -17,6 +17,7 @@ def confirm_config(aws_env, misc_config, opts)
 end
 
 def configure_environment(opts)
+  warn('NOTE: --env has been deprecated.  Please specify environment in yaml configs.') if opts.key?(:env)
   config, aws_env, user_data = Tapjoy::AutoscalingBootstrap::Base.new.configure_environment(opts)
   Aws.config[:region] = config[:aws_region]
   [config, aws_env, user_data]

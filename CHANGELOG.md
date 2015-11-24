@@ -1,3 +1,8 @@
+v1.0.1
+==
+#### Enhancement
+* Issue [#21](https://github.com/Tapjoy/tass/issues/21), PR [#22](https://github.com/Tapjoy/tass/pull/22): Deprecate `--env` in favor of using `:environment` in the config files, for a more consistent CLI experience
+
 v1.0.0
 ==
 #### Enhancement
