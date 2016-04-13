@@ -23,6 +23,13 @@ def configure_environment(opts)
   [config, aws_env, user_data]
 end
 
+# Are we using a newer yaml schema
+def newer_yaml_version?(config)
+  Tapjoy::AutoscalingBootstrap::Base.new.check_yaml_version(config).split(".").first.to_i >= 2
+end
+
+
+
 SUB_COMMANDS = %w(create update audit scale)
 Trollop::options do
   usage '[SUB_COMMAND] [options]'
@@ -46,27 +53,32 @@ when 'create'
 
   config, aws_env, user_data = configure_environment(opts)
 
-  Tapjoy::AutoscalingBootstrap::Base.new.check_clobber(opts, config)
-  unless confirm_config(aws_env, config, opts)
-    abort('Cannot continue if configuration is not correct.  Please fix.')
-  end
-  Tapjoy::AutoscalingBootstrap::AutoscalingGroup.new.create(opts, config, aws_env, user_data)
+  # check the verison of the yaml we are reading, and do the new hotness if we are running v2 or higher
+  if newer_yaml_version?(config)
+    # TODO: Implement new yaml parsing routine for cloudfront
+    puts "Running new parsing routine with:\nconfig: #{config}\naws_env: #{aws_env}\nuser_data: #{user_data}"
+  else
+    Tapjoy::AutoscalingBootstrap::Base.new.check_clobber(opts, config)
+    unless confirm_config(aws_env, config, opts)
+      abort('Cannot continue if configuration is not correct.  Please fix.')
+    end
+    Tapjoy::AutoscalingBootstrap::AutoscalingGroup.new.create(opts, config, aws_env, user_data)
 
-  if config.key?(:elb)
-    config[:elb].each do |elb|
-      elb.each do |elb_name, elb_config|
-        Tapjoy::AutoscalingBootstrap.elb_name = elb_name
-        elb_hash = {
-          elb_name => config[:default_elb_parameters].merge!(elb[elb_name])
-        }
+    if config.key?(:elb)
+      config[:elb].each do |elb|
+        elb.each do |elb_name, elb_config|
+          Tapjoy::AutoscalingBootstrap.elb_name = elb_name
+          elb_hash = {
+            elb_name => config[:default_elb_parameters].merge!(elb[elb_name])
+          }
 
-        Tapjoy::AutoscalingBootstrap::ELB.new(
-          elb_hash, config[:clobber_elb], config[:zones],
-          config[:security_groups])
+          Tapjoy::AutoscalingBootstrap::ELB.new(
+            elb_hash, config[:clobber_elb], config[:zones],
+            config[:security_groups])
+        end
       end
     end
   end
-
 when 'update'
   opts = Trollop.options do
     # Set help message
@@ -76,9 +88,16 @@ when 'update'
   end
 
   config, aws_env, user_data = configure_environment(opts)
-  confirm_config(aws_env, config, opts)
 
-  Tapjoy::AutoscalingBootstrap::LaunchConfiguration.new(config, aws_env, user_data)
+  # check the verison of the yaml we are reading, and do the new hotness if we are running v2 or higher
+  if newer_yaml_version?(config)
+    # TODO: Implement new yaml parsing routine for cloudfront
+    puts "Running new parsing routine with:\nconfig: #{config}\naws_env: #{aws_env}\nuser_data: #{user_data}"
+  else
+    confirm_config(aws_env, config, opts)
+
+    Tapjoy::AutoscalingBootstrap::LaunchConfiguration.new(config, aws_env, user_data)
+  end
 when 'audit'
   opts = Trollop.options do
     usage 'audit'
@@ -88,8 +107,14 @@ when 'audit'
 
   config, aws_env, user_data = configure_environment(opts)
 
-  config.merge!(aws_env.merge(user_data: Base64.encode64("#{user_data}")))
-  Tapjoy::AutoscalingBootstrap::Audit.new(config)
+  # check the verison of the yaml we are reading, and do the new hotness if we are running v2 or higher
+  if newer_yaml_version?(config)
+    # TODO: Implement new yaml parsing routine for cloudfront
+    puts "Running new parsing routine with:\nconfig: #{config}\naws_env: #{aws_env}\nuser_data: #{user_data}"
+  else
+    config.merge!(aws_env.merge(user_data: Base64.encode64("#{user_data}")))
+    Tapjoy::AutoscalingBootstrap::Audit.new(config)
+  end
 when 'scale'
   opts = Trollop.options do
     usage 'scale [options]'
@@ -99,7 +124,13 @@ when 'scale'
   end
 
   config, aws_env, user_data = configure_environment(opts)
-  Tapjoy::AutoscalingBootstrap::Autoscaling::Group.new.scale(config)
+  # check the verison of the yaml we are reading, and do the new hotness if we are running v2 or higher
+  if newer_yaml_version?(config)
+    # TODO: Implement new yaml parsing routine for cloudfront
+    puts "This command will be covered by #update functionality in the v2 schema"
+  else
+    Tapjoy::AutoscalingBootstrap::Autoscaling::Group.new.scale(config)
+  end
 else
   Trollop.educate
 end
