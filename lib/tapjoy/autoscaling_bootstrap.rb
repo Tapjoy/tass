@@ -111,6 +111,12 @@ module Tapjoy
         create_as_group && Tapjoy::AutoscalingBootstrap.group.exists && !clobber_as
       end
 
+      # See what version of the yaml we are running
+      def check_yaml_version(config)
+        # If we don't have one specified assume v1
+        config[:version] ? config[:version] : "1.0.0"
+      end
+
       # Get AWS Environment
       def get_security_groups(config_dir, env, group)
 
@@ -168,6 +174,9 @@ module Tapjoy
         env_hash      = self.load_yaml(File.join(common_path, "#{env}.yaml"))
 
         new_config = defaults_hash.merge!(env_hash).merge(facet_hash)
+
+        # TODO: Only run this part of the configuration and return aws_env and user_data for the older yaml file verison
+
         new_config[:config_dir] = config_dir
         new_config[:instance_ids] = opts[:instance_ids] if opts.key?(:instance_ids)
         aws_env = self.get_security_groups(common_path, env, new_config[:group])
@@ -177,7 +186,6 @@ module Tapjoy
         new_config[:tags] << {Name: new_config[:name]}
         Tapjoy::AutoscalingBootstrap.scaler_name = "#{new_config[:name]}-group"
         Tapjoy::AutoscalingBootstrap.config_name = "#{new_config[:name]}-config"
-        # If there's no ELB, then Not a ELB
         user_data = self.generate_user_data(userdata_dir,
           new_config[:bootstrap_script], new_config)
 
