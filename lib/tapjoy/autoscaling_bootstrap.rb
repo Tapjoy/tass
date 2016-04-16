@@ -13,6 +13,7 @@ require_relative 'autoscaling_bootstrap/autoscaling/config'
 require_relative 'autoscaling_bootstrap/autoscaling/policy'
 require_relative 'autoscaling_bootstrap/autoscaling/group'
 require_relative 'autoscaling_bootstrap/cloudwatch'
+require_relative 'autoscaling_bootstrap/cloudformation'
 require_relative 'autoscaling_bootstrap/configure_autoscaler'
 require_relative 'autoscaling_bootstrap/errors'
 require_relative 'autoscaling_bootstrap/errors/elb'
@@ -158,9 +159,8 @@ module Tapjoy
         agree('Is this information correct? [y/n]')
       end
 
-      # configure environment
-
-      def configure_environment(opts)
+      # Combine default values, values from yaml, and cli options
+      def initialize_environment(opts)
         filename = opts[:filename]
         facet_file    = filename
         config_dir    = File.expand_path('../..', facet_file)
@@ -172,14 +172,23 @@ module Tapjoy
         env = opts[:env] || facet_hash[:environment] || defaults_hash[:environment]
         Tapjoy::AutoscalingBootstrap.valid_env?(common_path, env)
         env_hash      = self.load_yaml(File.join(common_path, "#{env}.yaml"))
+        config = defaults_hash.merge!(env_hash).merge!(facet_hash).merge(opts)
+      end
 
-        new_config = defaults_hash.merge!(env_hash).merge(facet_hash)
 
-        # TODO: Only run this part of the configuration and return aws_env and user_data for the older yaml file verison
+      # Additional environment configuration used by legacy tooling
+      def legacy_configure_environment(opts)
+        filename = opts[:filename]
+        facet_file    = filename
+        config_dir    = File.expand_path('../..', facet_file)
+        userdata_dir  = "#{File.expand_path('../../..', facet_file)}/userdata"
+        common_path   = File.join(config_dir, 'common')
+
+        new_config = opts
 
         new_config[:config_dir] = config_dir
         new_config[:instance_ids] = opts[:instance_ids] if opts.key?(:instance_ids)
-        aws_env = self.get_security_groups(common_path, env, new_config[:group])
+        aws_env = self.get_security_groups(common_path, new_config[:environment], new_config[:group])
         new_config.merge!(aws_env)
 
         new_config[:autoscale] = false unless new_config[:scaling_type].eql?('dynamic')
