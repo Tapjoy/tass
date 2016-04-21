@@ -39,7 +39,7 @@ SUB_COMMANDS = %w(create update audit scale)
 Trollop::options do
   usage '[SUB_COMMAND] [options]'
   synopsis "\nConfigures autoscaling groups.\nAvailable subcommands are: #{SUB_COMMANDS}"
-  version "#{File.basename($PROGRAM_NAME)} #{Tapjoy::AutoscalingBootstrap::VERSION} \u00A9 2015 Tapjoy, Inc."
+  version "#{File.basename($PROGRAM_NAME)} #{Tapjoy::AutoscalingBootstrap::VERSION} \u00A9 2015-2016 Tapjoy, Inc."
   stop_on SUB_COMMANDS
 end
 
@@ -57,10 +57,17 @@ when 'create'
   end
 
   config = initialize_environment(opts)
+  sfr_config = {}  # @TODO: remove this when SFR config becomes sane
 
   # check the verison of the yaml we are reading, and do the new hotness if we are running v2 or higher
   if newer_yaml_version?(config)
     # Determine if we are making a cloudformation request
+    if config[:stack][:spot_fleet]
+      sfr_config.merge!(config[:stack][:spot_fleet][:config_data])
+      config[:stack].delete(:spot_fleet)
+      Tapjoy::AutoscalingBootstrap::EC2.request_spot_instances(sfr_config,
+        config[:userdata_dir])
+    end
     if config[:stack]
       # And if we are format the config into readable JSON for the request
       request_parmeter_hash = Tapjoy::AutoscalingBootstrap::Cloudformation.prepare_options_hash(config)
