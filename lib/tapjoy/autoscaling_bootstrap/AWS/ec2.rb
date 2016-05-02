@@ -35,7 +35,7 @@ module Tapjoy
             client.terminate_instances(instance_ids: instance_ids)
           end
 
-          def request_spot_instances(spot_price:, target_capacity:,
+          def request_spot_fleet(spot_price:, target_capacity:,
             iam_fleet_role:, excess_capacity_termination_policy:,
             allocation_strategy:, userdata_dir:, **config)
             config[:launch_specifications].each do |spec|

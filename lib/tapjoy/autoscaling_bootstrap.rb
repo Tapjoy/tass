@@ -32,6 +32,8 @@ require_relative 'autoscaling_bootstrap/launch_configuration'
 require_relative 'autoscaling_bootstrap/version'
 require_relative 'autoscaling_bootstrap/audit'
 require_relative 'autoscaling_bootstrap/ec2'
+require_relative 'autoscaling_bootstrap/EC2/spot_fleets'
+require_relative 'tass'
 
 module Tapjoy
   # Module for Autoscaling Bootstrap
@@ -39,10 +41,12 @@ module Tapjoy
     # This class is meant for class and instances variables used throughout
     # the application.
     class << self
-      attr_accessor :scaler_name, :config_name, :create_elb
+      attr_accessor :scaler_name, :config_name, :create_elb,
+                    :template_dir, :config_dir, :terraform_path
       attr_reader :elb_name
 
-      # If you're using AutoscalingBootstrap to create a new ELB, that name goes here
+      # If you're using AutoscalingBootstrap to create a new ELB,
+      # that name goes here
       def elb_name=(str)
         @elb_name = str
       end
@@ -162,9 +166,11 @@ module Tapjoy
       # Combine default values, values from yaml, and cli options
       def initialize_environment(opts)
         filename = opts[:filename]
-        facet_file    = filename
-        config_dir    = File.expand_path('../..', facet_file)
+        facet_file = filename
+        Tapjoy::AutoscalingBootstrap.config_dir = File.expand_path('../..', facet_file)
+        config_dir = Tapjoy::AutoscalingBootstrap.config_dir
         userdata_dir  = "#{File.expand_path('../../..', facet_file)}/userdata"
+        Tapjoy::AutoscalingBootstrap.template_dir = "#{File.expand_path('../../..', facet_file)}/templates"
 
         common_path   = File.join(config_dir, 'common')
         defaults_hash = self.load_yaml(File.join(common_path, 'defaults.yaml'))
@@ -174,9 +180,9 @@ module Tapjoy
         env_hash      = self.load_yaml(File.join(common_path, "#{env}.yaml"))
         config = defaults_hash.merge!(env_hash).merge!(facet_hash).merge(opts)
         config[:userdata_dir] = userdata_dir
+        Tapjoy::AutoscalingBootstrap.terraform_path = tf_path(config)
         config
       end
-
 
       # Additional environment configuration used by legacy tooling
       def legacy_configure_environment(opts)
@@ -229,6 +235,14 @@ module Tapjoy
             Tapjoy::AutoscalingBootstrap::AWS::EC2.create_security_group(group)
           end
         end
+      end
+
+      def tf_path(config)
+        @tf_path = File.join(
+          Tapjoy::AutoscalingBootstrap.config_dir, 'clusters',
+          config[:stack][:name])
+        Dir.mkdir @tf_path unless Dir.exist?(@tf_path)
+        @tf_path
       end
     end
   end
