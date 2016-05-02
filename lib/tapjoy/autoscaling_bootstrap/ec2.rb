@@ -15,12 +15,6 @@ module Tapjoy
           Tapjoy::AutoscalingBootstrap::AWS::EC2.toggle_termination_protection(instance_id, 'false')
         end
 
-        def request_spot_instances(config, userdata_dir)
-          Tapjoy::AutoscalingBootstrap::AWS::EC2.request_spot_instances(
-            userdata_dir: userdata_dir, **config)
-          exit 1
-        end
-
         private
         def find_static_instances(config)
           response = Tapjoy::AutoscalingBootstrap::AWS::EC2.describe_instances_by_tag(config)
