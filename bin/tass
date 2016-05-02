@@ -11,30 +11,33 @@ end
 def confirm_config(aws_env, misc_config, opts)
   use_vpc = true if misc_config[:vpc_subnets]
   has_elb = true if misc_config.key?(:elb)
-  Tapjoy::AutoscalingBootstrap::Base.new.confirm_config(**aws_env,
-    **misc_config, **opts, use_vpc: use_vpc, has_elb: has_elb,
+  Tapjoy::AutoscalingBootstrap::Base.new.confirm_config(
+    **aws_env, **misc_config, **opts, use_vpc: use_vpc, has_elb: has_elb,
     config: misc_config)
 end
 
-def configure_environment(opts)
-  warn('NOTE: --env has been deprecated.  Please specify environment in yaml configs.') if opts.key?(:env)
-  config, aws_env, user_data = Tapjoy::AutoscalingBootstrap::Base.new.configure_environment(opts)
+def initialize_environment(opts)
+  config = Tapjoy::AutoscalingBootstrap::Base.new.initialize_environment(opts)
   Aws.config[:region] = config[:aws_region]
+  config
+end
+
+def legacy_configure_environment(opts)
+  warn('NOTE: --env has been deprecated.  Please specify environment in yaml configs.') if opts.key?(:env)
+  config, aws_env, user_data = Tapjoy::AutoscalingBootstrap::Base.new.legacy_configure_environment(opts)
   [config, aws_env, user_data]
 end
 
 # Are we using a newer yaml schema
 def newer_yaml_version?(config)
-  Tapjoy::AutoscalingBootstrap::Base.new.check_yaml_version(config).split(".").first.to_i >= 2
+  Tapjoy::AutoscalingBootstrap::Base.new.check_yaml_version(config).split('.').first.to_i >= 2
 end
 
-
-
 SUB_COMMANDS = %w(create update audit scale)
-Trollop::options do
+Trollop.options do
   usage '[SUB_COMMAND] [options]'
   synopsis "\nConfigures autoscaling groups.\nAvailable subcommands are: #{SUB_COMMANDS}"
-  version "#{File.basename($PROGRAM_NAME)} #{Tapjoy::AutoscalingBootstrap::VERSION} \u00A9 2015 Tapjoy, Inc."
+  version "#{File.basename($PROGRAM_NAME)} #{Tapjoy::AutoscalingBootstrap::VERSION} \u00A9 2015-2016 Tapjoy, Inc."
   stop_on SUB_COMMANDS
 end
 
@@ -51,18 +54,46 @@ when 'create'
     common_args
   end
 
-  config, aws_env, user_data = configure_environment(opts)
+  config = initialize_environment(opts)
+  sfr_config = {} # @TODO: remove this when SFR config becomes sane
 
-  # check the verison of the yaml we are reading, and do the new hotness if we are running v2 or higher
+  # check the verison of the yaml we are reading, and do the new hotness
+  # if we are running v2 or higher
   if newer_yaml_version?(config)
-    # TODO: Implement new yaml parsing routine for cloudfront
-    puts "Running new parsing routine with:\nconfig: #{config}\naws_env: #{aws_env}\nuser_data: #{user_data}"
+    # Determine if we are making a cloudformation request
+    if config[:stack][:spot_fleet]
+      sfr_config.merge!(config[:stack][:spot_fleet][:config_data])
+      config[:stack].delete(:spot_fleet)
+      Tapjoy::AutoscalingBootstrap::EC2::SpotFleets.request(
+        sfr_config, config[:userdata_dir])
+      print 'Spot Request Granted.  '
+      puts "Id: #{Tapjoy::AutoscalingBootstrap::EC2::SpotFleets.request_id}"
+      Tapjoy::TASS::AWS::Cloudwatch.create_spot_fleet_alarm(config)
+      Tapjoy::TASS.plan
+      Tapjoy::TASS.apply
+    end
+    if config[:stack]
+      # And if we are format the config into readable JSON for the request
+      request_parmeter_hash = Tapjoy::AutoscalingBootstrap::Cloudformation.prepare_options_hash(config)
+      puts "This is the current request paramter hash: #{request_parmeter_hash}"
+      puts "\nAnd it's parsable as JSON:\n"
+      puts JSON.parse request_parmeter_hash[:template_body]
+
+    else
+    # @TODO: potentially tie into the old methods if we aren't
+    # making a cloudformation request
+    puts 'Non cloudformation-based requests will be implemented at a later date.'
+    end
   else
+    # Run the legacy code
+    config, aws_env, user_data = legacy_configure_environment(config)
+    puts 'finished the config'
     Tapjoy::AutoscalingBootstrap::Base.new.check_clobber(opts, config)
     unless confirm_config(aws_env, config, opts)
       abort('Cannot continue if configuration is not correct.  Please fix.')
     end
-    Tapjoy::AutoscalingBootstrap::AutoscalingGroup.new.create(opts, config, aws_env, user_data)
+    Tapjoy::AutoscalingBootstrap::AutoscalingGroup.new.create(
+      opts, config, aws_env, user_data)
 
     if config.key?(:elb)
       config[:elb].each do |elb|
@@ -87,13 +118,19 @@ when 'update'
     common_args
   end
 
-  config, aws_env, user_data = configure_environment(opts)
+  config = initialize_environment(opts)
 
   # check the verison of the yaml we are reading, and do the new hotness if we are running v2 or higher
   if newer_yaml_version?(config)
-    # TODO: Implement new yaml parsing routine for cloudfront
-    puts "Running new parsing routine with:\nconfig: #{config}\naws_env: #{aws_env}\nuser_data: #{user_data}"
+    # Determine if we are making a cloudformation request
+    if config[:stack]
+      # And if we are format the config into readable JSON for the request
+    else
+    # TODO potentially tie into the old methods if we aren't making a cloudformation request
+    puts "Non cloudformation-based requests will be implemented at a later date."
+    end
   else
+    config, aws_env, user_data = legacy_configure_environment(config)
     confirm_config(aws_env, config, opts)
 
     Tapjoy::AutoscalingBootstrap::LaunchConfiguration.new(config, aws_env, user_data)
@@ -105,13 +142,15 @@ when 'audit'
     common_args
   end
 
-  config, aws_env, user_data = configure_environment(opts)
+  config = initialize_environment(opts)
+
 
   # check the verison of the yaml we are reading, and do the new hotness if we are running v2 or higher
   if newer_yaml_version?(config)
     # TODO: Implement new yaml parsing routine for cloudfront
-    puts "Running new parsing routine with:\nconfig: #{config}\naws_env: #{aws_env}\nuser_data: #{user_data}"
+    puts "Running new parsing routine with:\nconfig: #{config}"
   else
+    config, aws_env, user_data = legacy_configure_environment(config)
     config.merge!(aws_env.merge(user_data: Base64.encode64("#{user_data}")))
     Tapjoy::AutoscalingBootstrap::Audit.new(config)
   end
@@ -123,12 +162,14 @@ when 'scale'
     opt :instance_ids, 'Instance IDs to scale down', type: :strings
   end
 
-  config, aws_env, user_data = configure_environment(opts)
+  config = initialize_environment(opts)
+
   # check the verison of the yaml we are reading, and do the new hotness if we are running v2 or higher
   if newer_yaml_version?(config)
     # TODO: Implement new yaml parsing routine for cloudfront
     puts "This command will be covered by #update functionality in the v2 schema"
   else
+    config, aws_env, user_data = configure_environment(config)
     Tapjoy::AutoscalingBootstrap::Autoscaling::Group.new.scale(config)
   end
 else

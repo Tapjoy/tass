@@ -16,9 +16,11 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency('highline', '~> 1.0')
   s.add_runtime_dependency('aws-sdk', '~> 2.0')
   s.add_runtime_dependency('hashdiff', '~> 0.2')
+  s.add_runtime_dependency('awrence', '~> 0.1.0')
   s.add_development_dependency('rspec', '~> 3.2')
   s.add_development_dependency('activesupport', '~> 4.2')
   s.add_development_dependency('webmock', '~> 1.20')
   s.add_development_dependency('vcr', '~> 2.9')
   s.add_development_dependency('rspec_junit_formatter', '0.2.2')
+  s.add_development_dependency('pry', '0.10.3')
 end

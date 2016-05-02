@@ -13,6 +13,7 @@ require_relative 'autoscaling_bootstrap/autoscaling/config'
 require_relative 'autoscaling_bootstrap/autoscaling/policy'
 require_relative 'autoscaling_bootstrap/autoscaling/group'
 require_relative 'autoscaling_bootstrap/cloudwatch'
+require_relative 'autoscaling_bootstrap/cloudformation'
 require_relative 'autoscaling_bootstrap/configure_autoscaler'
 require_relative 'autoscaling_bootstrap/errors'
 require_relative 'autoscaling_bootstrap/errors/elb'
@@ -31,6 +32,8 @@ require_relative 'autoscaling_bootstrap/launch_configuration'
 require_relative 'autoscaling_bootstrap/version'
 require_relative 'autoscaling_bootstrap/audit'
 require_relative 'autoscaling_bootstrap/ec2'
+require_relative 'autoscaling_bootstrap/EC2/spot_fleets'
+require_relative 'tass'
 
 module Tapjoy
   # Module for Autoscaling Bootstrap
@@ -38,10 +41,12 @@ module Tapjoy
     # This class is meant for class and instances variables used throughout
     # the application.
     class << self
-      attr_accessor :scaler_name, :config_name, :create_elb
+      attr_accessor :scaler_name, :config_name, :create_elb,
+                    :template_dir, :config_dir, :terraform_path
       attr_reader :elb_name
 
-      # If you're using AutoscalingBootstrap to create a new ELB, that name goes here
+      # If you're using AutoscalingBootstrap to create a new ELB,
+      # that name goes here
       def elb_name=(str)
         @elb_name = str
       end
@@ -69,7 +74,7 @@ module Tapjoy
       def valid_env?(config_dir, env)
         env_list = supported_envs(config_dir)
         unless env_list.include?(env)
-          Trollop.die :env, "Currently supported enviroments are #{env_list.join(',')}"
+          abort("Currently supported enviroments are #{env_list.join(',')}")
         end
       end
 
@@ -158,24 +163,43 @@ module Tapjoy
         agree('Is this information correct? [y/n]')
       end
 
-      # configure environment
-
-      def configure_environment(opts)
+      # Combine default values, values from yaml, and cli options
+      def initialize_environment(opts)
         filename = opts[:filename]
-        facet_file    = filename
-        config_dir    = File.expand_path('../..', facet_file)
+        facet_file = filename
+        Tapjoy::AutoscalingBootstrap.config_dir = File.expand_path('../..', facet_file)
+        config_dir = Tapjoy::AutoscalingBootstrap.config_dir
         userdata_dir  = "#{File.expand_path('../../..', facet_file)}/userdata"
+        Tapjoy::AutoscalingBootstrap.template_dir = "#{File.expand_path('../../..', facet_file)}/templates"
 
         common_path   = File.join(config_dir, 'common')
         defaults_hash = self.load_yaml(File.join(common_path, 'defaults.yaml'))
         facet_hash    = self.load_yaml(facet_file)
-        env = opts[:env] || facet_hash[:environment] || defaults_hash[:environment]
+        env = opts[:environment] || facet_hash[:environment] || defaults_hash[:environment]
         Tapjoy::AutoscalingBootstrap.valid_env?(common_path, env)
         env_hash      = self.load_yaml(File.join(common_path, "#{env}.yaml"))
+        config = defaults_hash.merge!(env_hash).merge!(facet_hash).merge(opts)
+        config[:userdata_dir] = userdata_dir
+        Tapjoy::AutoscalingBootstrap.terraform_path = tf_path(config)
+        config
+      end
 
-        new_config = defaults_hash.merge!(env_hash).merge(facet_hash)
+      # Additional environment configuration used by legacy tooling
+      def legacy_configure_environment(opts)
+        filename = opts[:filename]
+        facet_file    = filename
+        config_dir    = File.expand_path('../..', facet_file)
+        userdata_dir  = "#{File.expand_path('../../..', facet_file)}/userdata"
+        common_path   = File.join(config_dir, 'common')
+        defaults_hash = load_yaml(File.join(common_path, 'defaults.yaml'))
+        facet_hash    = load_yaml(facet_file)
+        env = opts[:environment] || facet_hash[:environment] || defaults_hash[:environment]
+        Tapjoy::AutoscalingBootstrap.valid_env?(common_path, env)
+        env_hash      = load_yaml(File.join(common_path, "#{env}.yaml"))
+        config = defaults_hash.merge!(env_hash).merge!(facet_hash).merge(opts)
+        config[:userdata_dir] = userdata_dir
 
-        # TODO: Only run this part of the configuration and return aws_env and user_data for the older yaml file verison
+        new_config = config
 
         new_config[:config_dir] = config_dir
         new_config[:instance_ids] = opts[:instance_ids] if opts.key?(:instance_ids)
@@ -211,6 +235,14 @@ module Tapjoy
             Tapjoy::AutoscalingBootstrap::AWS::EC2.create_security_group(group)
           end
         end
+      end
+
+      def tf_path(config)
+        @tf_path = File.join(
+          Tapjoy::AutoscalingBootstrap.config_dir, 'clusters',
+          config[:stack][:name])
+        Dir.mkdir @tf_path unless Dir.exist?(@tf_path)
+        @tf_path
       end
     end
   end
