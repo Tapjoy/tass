@@ -35,7 +35,7 @@ module Tapjoy
       end
 
       def date_stamp
-        Time.now.strftime('%Y%m%d-%H%M%S')
+        Time.now.utc.strftime('%Y%m%d-%H%M%S')
       end
     end
   end
