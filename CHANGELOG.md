@@ -1,46 +1,101 @@
-v1.0.1
-==
-#### Enhancement
-* Issue [#21](https://github.com/Tapjoy/tass/issues/21), PR [#22](https://github.com/Tapjoy/tass/pull/22): Deprecate `--env` in favor of using `:environment` in the config files, for a more consistent CLI experience
+# Change Log
 
-v1.0.0
-==
-#### Enhancement
-* PR [#13](https://github.com/Tapjoy/tass/pull/13): Create a new workflow around ELBs, to allow multiple ELBs to be attached to an auto scaling group without requiring management of each ELB.
-* PR [#14](https://github.com/Tapjoy/tass/pull/14): Remove $CONFIG_DIR options, now traverse the path relative to the specified config file.  Additionally, set the termination policy for the auto scaling groups to be set via config file rather than hard-coded.
-* PR [#15](https://github.com/Tapjoy/tass/pull/14): Allow configurations of static and dynamic auto scaling groups.  Also, fix the specs to be more accurate to the proper code flow and reduce false errors.
+## [Unreleased](https://github.com/Tapjoy/tass/tree/HEAD)
 
-v0.2.2
-==
-#### Enhancement
-* PR [#12](https://github.com/Tapjoy/tass/pull/12): Adding support to specify a custom list of elbs for an autoscaling group to add itself to
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v1.0.1...HEAD)
 
-v0.2.1
-==
-#### Bug Fixes
-* PR [#11](https://github.com/Tapjoy/tass/pull/11): Errors creating/updating launch configurations should be fatal
+**Fixed bugs:**
 
-v0.2.0
-==
-#### Enhancement
-* Issue [#5](https://github.com/Tapjoy/tass/issues/5), PR [#10](https://github.com/Tapjoy/tass/pull/10): tass <action> --file should take a file path
-* Properly catch error when launch configuration limit has been exceeded
+- Add ebs-only support [\#24](https://github.com/Tapjoy/tass/issues/24)
 
-v0.1.3
-==
-#### Enhancement
-* Issue [#6](https://github.com/Tapjoy/tass/issues/6), PR [#8](https://github.com/Tapjoy/tass/pull/8): Allow environment to be specified in YAML
+**Closed issues:**
 
-v0.1.2
-==
-#### Bug Fixes
-* Issue [#4](https://github.com/Tapjoy/tass/issues/4), PR [#7](https://github.com/Tapjoy/tass/pull/7): Launch configuration name is based on current ASG launch configuration and not tass name value
+- Deprecate --env [\#21](https://github.com/Tapjoy/tass/issues/21)
 
-v0.1.1
-==
-#### Bug Fixes
-* PR [#2](https://github.com/Tapjoy/tass/pull/2): Allow VPC security group to be overwritten
+**Merged pull requests:**
 
-v0.1.0
-==
-* Initial version made available for public consumption
+- \[OPER-2313\] Parse global and per launch config tags and recipes in sp… [\#33](https://github.com/Tapjoy/tass/pull/33) ([ehealy](https://github.com/ehealy))
+- Feature/yaml parsing switch [\#31](https://github.com/Tapjoy/tass/pull/31) ([atayarani](https://github.com/atayarani))
+- OPER-2249 \#support cloudwatch and terraform [\#30](https://github.com/Tapjoy/tass/pull/30) ([atayarani](https://github.com/atayarani))
+- fix specs [\#29](https://github.com/Tapjoy/tass/pull/29) ([atayarani](https://github.com/atayarani))
+- Make TASS use SDK for spot fleet requests [\#28](https://github.com/Tapjoy/tass/pull/28) ([atayarani](https://github.com/atayarani))
+- Feature/yaml parsing switch [\#26](https://github.com/Tapjoy/tass/pull/26) ([ehealy](https://github.com/ehealy))
+
+## [v1.0.1](https://github.com/Tapjoy/tass/tree/v1.0.1) (2015-11-24)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v1.0.0...v1.0.1)
+
+**Merged pull requests:**
+
+- OPER-1866 \#in-review deprecate --env [\#22](https://github.com/Tapjoy/tass/pull/22) ([atayarani](https://github.com/atayarani))
+
+## [v1.0.0](https://github.com/Tapjoy/tass/tree/v1.0.0) (2015-11-03)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/list...v1.0.0)
+
+**Merged pull requests:**
+
+- Create a new workflow around ELB that is separate from ASG [\#17](https://github.com/Tapjoy/tass/pull/17) ([atayarani](https://github.com/atayarani))
+- documentation updates for v1.0.0 [\#16](https://github.com/Tapjoy/tass/pull/16) ([atayarani](https://github.com/atayarani))
+- Static and Dynamic scaling [\#15](https://github.com/Tapjoy/tass/pull/15) ([atayarani](https://github.com/atayarani))
+- Allow configuration of ASG termination policies [\#14](https://github.com/Tapjoy/tass/pull/14) ([atayarani](https://github.com/atayarani))
+- Create a new workflow around ELB that is separate from ASG [\#13](https://github.com/Tapjoy/tass/pull/13) ([atayarani](https://github.com/atayarani))
+
+## [list](https://github.com/Tapjoy/tass/tree/list) (2015-09-22)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v0.2.2...list)
+
+## [v0.2.2](https://github.com/Tapjoy/tass/tree/v0.2.2) (2015-09-22)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v0.2.1...v0.2.2)
+
+**Merged pull requests:**
+
+- Adding support to specify a custom list of elbs for an autoscaling gr… [\#12](https://github.com/Tapjoy/tass/pull/12) ([StabbyCutyou](https://github.com/StabbyCutyou))
+
+## [v0.2.1](https://github.com/Tapjoy/tass/tree/v0.2.1) (2015-08-11)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v0.2.0...v0.2.1)
+
+**Merged pull requests:**
+
+- fix: launch config errors should be fatal [\#11](https://github.com/Tapjoy/tass/pull/11) ([atayarani](https://github.com/atayarani))
+
+## [v0.2.0](https://github.com/Tapjoy/tass/tree/v0.2.0) (2015-08-06)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v0.1.3...v0.2.0)
+
+**Implemented enhancements:**
+
+- TASS Yaml configs should allow environment to be specified, with CLI as override [\#6](https://github.com/Tapjoy/tass/issues/6)
+- tass \<action\> --file should take a file path [\#5](https://github.com/Tapjoy/tass/issues/5)
+
+**Merged pull requests:**
+
+- Allow paths in filename [\#10](https://github.com/Tapjoy/tass/pull/10) ([atayarani](https://github.com/atayarani))
+
+## [v0.1.3](https://github.com/Tapjoy/tass/tree/v0.1.3) (2015-08-05)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v0.1.2...v0.1.3)
+
+**Fixed bugs:**
+
+- Launch configuration name is based on current ASG launch configuration and not tass name value [\#4](https://github.com/Tapjoy/tass/issues/4)
+
+**Merged pull requests:**
+
+- V013 [\#9](https://github.com/Tapjoy/tass/pull/9) ([atayarani](https://github.com/atayarani))
+- Allow environment to be specified in YAML [\#8](https://github.com/Tapjoy/tass/pull/8) ([atayarani](https://github.com/atayarani))
+
+## [v0.1.2](https://github.com/Tapjoy/tass/tree/v0.1.2) (2015-07-31)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v0.1.1...v0.1.2)
+
+**Merged pull requests:**
+
+- Use specified launch configuration name to feed updated config name [\#7](https://github.com/Tapjoy/tass/pull/7) ([atayarani](https://github.com/atayarani))
+- bugfix to allow VPC security group to be overwritten [\#2](https://github.com/Tapjoy/tass/pull/2) ([atayarani](https://github.com/atayarani))
+
+## [v0.1.1](https://github.com/Tapjoy/tass/tree/v0.1.1) (2015-07-13)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v0.1.0...v0.1.1)
+
+## [v0.1.0](https://github.com/Tapjoy/tass/tree/v0.1.0) (2015-07-06)
+**Merged pull requests:**
+
+- change team branding [\#1](https://github.com/Tapjoy/tass/pull/1) ([atayarani](https://github.com/atayarani))
+
+
+
+\* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
