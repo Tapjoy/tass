@@ -29,7 +29,6 @@ module Tapjoy
 
           puts "Creating scaling group: #{@scaler_name}"
           Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.create(**config)
-          create_termination_notification(config)
         end
 
         # Check if autoscale group exists
