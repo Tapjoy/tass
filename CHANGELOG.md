@@ -2,7 +2,19 @@
 
 ## [Unreleased](https://github.com/Tapjoy/tass/tree/HEAD)
 
-[Full Changelog](https://github.com/Tapjoy/tass/compare/v1.0.1...HEAD)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v1.0.2...HEAD)
+
+**Closed issues:**
+
+- Use UTC time [\#34](https://github.com/Tapjoy/tass/issues/34)
+- Specs fail due to insufficient wait [\#23](https://github.com/Tapjoy/tass/issues/23)
+
+**Merged pull requests:**
+
+- use UTC in datestamp \#34 [\#37](https://github.com/Tapjoy/tass/pull/37) ([atayarani](https://github.com/atayarani))
+
+## [v1.0.2](https://github.com/Tapjoy/tass/tree/v1.0.2) (2016-06-07)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v1.0.1...v1.0.2)
 
 **Fixed bugs:**
 
@@ -14,6 +26,8 @@
 
 **Merged pull requests:**
 
+- OPER-2363 \#in-review remove termination notification [\#36](https://github.com/Tapjoy/tass/pull/36) ([atayarani](https://github.com/atayarani))
+- OPER-2363 \#in-progress remove term notification from tass 2.0 [\#35](https://github.com/Tapjoy/tass/pull/35) ([atayarani](https://github.com/atayarani))
 - \[OPER-2313\] Parse global and per launch config tags and recipes in sp… [\#33](https://github.com/Tapjoy/tass/pull/33) ([ehealy](https://github.com/ehealy))
 - Feature/yaml parsing switch [\#31](https://github.com/Tapjoy/tass/pull/31) ([atayarani](https://github.com/atayarani))
 - OPER-2249 \#support cloudwatch and terraform [\#30](https://github.com/Tapjoy/tass/pull/30) ([atayarani](https://github.com/atayarani))
