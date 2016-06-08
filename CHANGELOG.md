@@ -17,6 +17,20 @@
 ## [v1.0.2](https://github.com/Tapjoy/tass/tree/v1.0.2) (2016-06-07)
 [Full Changelog](https://github.com/Tapjoy/tass/compare/v1.0.1...v1.0.2)
 
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v1.0.2...HEAD)
+
+**Closed issues:**
+
+- Use UTC time [\#34](https://github.com/Tapjoy/tass/issues/34)
+- Specs fail due to insufficient wait [\#23](https://github.com/Tapjoy/tass/issues/23)
+
+**Merged pull requests:**
+
+- use UTC in datestamp \#34 [\#37](https://github.com/Tapjoy/tass/pull/37) ([atayarani](https://github.com/atayarani))
+
+## [v1.0.2](https://github.com/Tapjoy/tass/tree/v1.0.2) (2016-06-07)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v1.0.1...v1.0.2)
+
 **Fixed bugs:**
 
 - Add ebs-only support [\#24](https://github.com/Tapjoy/tass/issues/24)
