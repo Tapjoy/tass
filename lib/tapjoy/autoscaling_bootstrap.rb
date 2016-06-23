@@ -180,7 +180,9 @@ module Tapjoy
         env_hash      = self.load_yaml(File.join(common_path, "#{env}.yaml"))
         config = defaults_hash.merge!(env_hash).merge!(facet_hash).merge(opts)
         config[:userdata_dir] = userdata_dir
-        Tapjoy::AutoscalingBootstrap.terraform_path = tf_path(config)
+        if Tapjoy::AutoscalingBootstrap::Base.new.check_yaml_version(config).split('.').first.to_i >= 2
+          Tapjoy::AutoscalingBootstrap.terraform_path = tf_path(config)
+        end
         config
       end
 
