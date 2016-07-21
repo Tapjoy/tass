@@ -16,7 +16,7 @@ module Tapjoy
 
             def create(image_id:, instance_type:, security_groups:, user_data:,
               keypair:, iam_instance_profile:, classic_link_vpc_id: nil,
-              classic_link_sg_ids: nil, **unused_values)
+              classic_link_sg_ids: nil, spot_price: nil, **unused_values)
 
               self.client.create_launch_configuration(
                 launch_configuration_name: Tapjoy::AutoscalingBootstrap.config_name,
@@ -28,6 +28,7 @@ module Tapjoy
                 key_name: keypair,
                 classic_link_vpc_id: classic_link_vpc_id,
                 classic_link_vpc_security_groups: classic_link_sg_ids,
+                spot_price: spot_price,
               )
             end
 
