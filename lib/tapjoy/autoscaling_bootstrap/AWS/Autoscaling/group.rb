@@ -37,7 +37,7 @@ module Tapjoy
               )
             end
 
-            def create(zones:, health_check_type: nil, tags:,
+            def create(zones:, health_check_type: nil, placement_group: nil, tags:,
               vpc_subnets: nil, termination_policies: , **unused_values)
 
               group_hash = {
@@ -47,6 +47,7 @@ module Tapjoy
                 min_size: 0, max_size: 0, desired_capacity: 0,
                 termination_policies: termination_policies,
                 vpc_zone_identifier: vpc_subnets,
+                placement_group: placement_group,
                 tags: Tapjoy::AutoscalingBootstrap::Autoscaling::Group.new.generate_tags(tags)
               }
 
