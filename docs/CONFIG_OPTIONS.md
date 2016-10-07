@@ -41,6 +41,7 @@
 :name:                           # (String) name for autoscaling group
 :instance_type:                  # (String) Instance type to use (e.g, t2.medium)
 :group:                          # (String) Comma-separated list of security groups to attach to autoscaler
+:placement_group:                # (String) — The name of the placement group into which you\'ll launch your instances, if any.
 :vpc_subnets:                    # (String) Comma-separated list of VPC subnets to assign to autoscaler (valid for VPC instances only)
 :classic_link_vpc_id:            # (String) VPC id to use for ClassicLink (valid for EC2-Classic instances only)
 :classic_link_sg_ids:            # (String Array) VPC subnets to use for ClassicLink (valid for EC2-Classic instances only)
