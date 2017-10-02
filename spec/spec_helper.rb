@@ -1,3 +1,6 @@
+require 'codacy-coverage'
+Codacy::Reporter.start
+
 require 'aws-sdk-core'
 require 'highline/import'
 require 'base64'
@@ -34,6 +37,7 @@ VCR.configure do |c|
   c.cassette_library_dir = 'spec/fixtures/vcr_cassettes'
   c.hook_into :webmock
   c.configure_rspec_metadata!
-  c.allow_http_connections_when_no_cassette = true
+  c.allow_http_connections_when_no_cassette = false
+  c.ignore_hosts 'api.codacy.com'
   c.default_cassette_options = { :record => :all }
 end

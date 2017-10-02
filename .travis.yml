@@ -1,2 +1,4 @@
 language: ruby
 script: bundle exec rspec
+env:
+- CODACY_PROJECT_TOKEN=1d331ca7284a4d0e93610237e086ac0e
