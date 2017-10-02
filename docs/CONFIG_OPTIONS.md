@@ -46,6 +46,7 @@
 :classic_link_vpc_id:            # (String) VPC id to use for ClassicLink (valid for EC2-Classic instances only)
 :classic_link_sg_ids:            # (String Array) VPC subnets to use for ClassicLink (valid for EC2-Classic instances only)
 :spot_price:                     # (String) The maximum hourly price to be paid for any Spot Instance launched to fulfill the request. (valid for spot instances only)
+:ebs_optimized:                  # (Boolean) — Indicates whether the instance is optimized for Amazon EBS I/O. By default, the instance is optimized for EBS I/O.
 :termination_policies:           # (String Array) List of termination policies to apply to autoscaler (reference AWS documentation for further info)
 
 :scaling_type:                   # (String) Type of scaling group to create.  At this time, the value should either be 'dynamic' or 'static'.
