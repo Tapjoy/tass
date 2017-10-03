@@ -31,9 +31,20 @@ module Tapjoy
           Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.create(**config)
         end
 
+        def update(config:, aws_env:, user_data:)
+          if exists
+            puts "Updating launch config for scaling group: #{@scaler_name}"
+            Tapjoy::AutoscalingBootstrap::LaunchConfiguration.new(config, aws_env, user_data)
+            Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.update_launch_config(@scaler_name)
+            # increment_autoscale_group
+          else
+            abort("Scaling group \"#{@scaler_name}\" doesn't exist, and therefore cannot be updated.")
+          end
+        end
+
         # Check if autoscale group exists
         def exists
-          !Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.describe.nil?
+          Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::Group.describe.nil? ? false : true
         end
 
         # Encode user data into required base64 form

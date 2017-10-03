@@ -34,7 +34,11 @@ module Tapjoy
 
         def delete
           puts "Deleting launch config #{Tapjoy::AutoscalingBootstrap.config_name}"
-          Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::LaunchConfig.delete
+          begin
+            Tapjoy::AutoscalingBootstrap::AWS::Autoscaling::LaunchConfig.delete
+          rescue Aws::AutoScaling::Errors::ResourceInUse
+            puts "Not deleting the existing launch config, because it's currently in use"
+          end
         end
       end
     end

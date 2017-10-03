@@ -54,6 +54,13 @@ module Tapjoy
               self.client.create_auto_scaling_group(**group_hash)
             end
 
+            def update_launch_config(scaler_name)
+              self.client.update_auto_scaling_group(
+                auto_scaling_group_name: scaler_name,
+                launch_configuration_name: Tapjoy::AutoscalingBootstrap.config_name,
+              )
+            end
+
             def attach_elb(elb_list)
               self.client.attach_load_balancers({
                 auto_scaling_group_name: Tapjoy::AutoscalingBootstrap.scaler_name,
