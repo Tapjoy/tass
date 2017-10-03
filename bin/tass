@@ -109,7 +109,8 @@ when 'update'
   else
     confirm_config(aws_env, config, opts)
 
-    Tapjoy::AutoscalingBootstrap::LaunchConfiguration.new(config, aws_env, user_data)
+    Tapjoy::AutoscalingBootstrap::AutoscalingGroup.new.create(
+      opts, config, aws_env, user_data)
   end
 when 'audit'
   opts = Trollop.options do
