@@ -7,7 +7,7 @@ module Tapjoy
 
         if misc_config[:create_as_group]
           sec_group_exists(aws_env[:security_groups]) unless misc_config[:vpc_subnets]
-          if autoscaling_group_exists
+          if autoscaling_group_exists?
             update_autoscaling_group(misc_config, aws_env, user_data)
           else
             create_autoscaling_group(misc_config, aws_env, user_data)

@@ -24,6 +24,7 @@
 :scale_down_scaling_adjustment:  # (Int) Number of servers to scale down at one time (MUST BE < 0)
 :scale_down_threshold:           # (Int) CPU Percentage to scale down on
 :health_check_type:              # (String) Type of health check (MUST BE 'EC2' or 'ELB')
+:asg_metrics:                    # (Boolean) Whether or not to enable metrics on the Auto Scaling Group
 
 :environment:                    # (String) Specify which environment config to load.
 :image_id:                       # (String) Image id to launch instances with (MUST START WITH ami-)
