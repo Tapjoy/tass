@@ -1,9 +1,9 @@
 TASS
 ====
 [![Gem Version](https://badge.fury.io/rb/tass.svg)](http://badge.fury.io/rb/tass)
-[![Code Climate](https://codeclimate.com/github/Tapjoy/tass/badges/gpa.svg)](https://codeclimate.com/github/Tapjoy/tass)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8e3b1efa8ff94817a281efd12aed3bb3)](https://www.codacy.com/app/ali-tayarani/tass?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Tapjoy/tass&amp;utm_campaign=Badge_Grade)
 [![Gem](https://img.shields.io/gem/dt/tass.svg)](https://rubygems.org/gems/tass/)
-[![Circle CI](https://circleci.com/gh/Tapjoy/tass.svg?style=svg)](https://circleci.com/gh/Tapjoy/tass)
+[![Build Status](https://travis-ci.org/Tapjoy/tass.svg?branch=master)](https://travis-ci.org/Tapjoy/tass)
 
 TASS is the suite of tools that the Tapjoy Operations team uses to manage autoscaling groups and launch configurations.
 

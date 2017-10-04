@@ -10,8 +10,12 @@ module Tapjoy
         updated_config = current.to_hash.merge!(new_config)
 
         lc_name = "#{Tapjoy::AutoscalingBootstrap.config_name}_#{date_stamp}"
-        update(config_name: lc_name, user_data: user_data,
-          updated_config: updated_config, aws_env: aws_env)
+        update(
+          config_name: lc_name,
+          scaler_name: Tapjoy::AutoscalingBootstrap.scaler_name,
+          user_data: user_data,
+          updated_config: updated_config, aws_env: aws_env
+        )
       end
 
       def current
@@ -26,16 +30,13 @@ module Tapjoy
 
       def update(config_name:, scaler_name: 'NaS', user_data: user_data,
         updated_config:, aws_env:)
-
         Tapjoy::AutoscalingBootstrap.config_name = config_name
-        Tapjoy::AutoscalingBootstrap.scaler_name = scaler_name
-
         Tapjoy::AutoscalingBootstrap.config.create(updated_config, aws_env,
           user_data)
       end
 
       def date_stamp
-        Time.now.strftime('%Y%m%d-%H%M%S')
+        Time.now.utc.strftime('%Y%m%d-%H%M%S')
       end
     end
   end

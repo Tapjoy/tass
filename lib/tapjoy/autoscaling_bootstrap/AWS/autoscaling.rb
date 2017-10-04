@@ -16,6 +16,8 @@ module Tapjoy
             )
           end
 
+          ## TODO Call put_scaling_policy based on whether content of YAML and describe_policies are different
+
           def put_scaling_policy(policy_name: policy, scaling_adjustment:,
             cooldown:, **unused_values)
 

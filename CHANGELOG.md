@@ -1,5 +1,24 @@
 # Change Log
 
+## [Unreleased](https://github.com/Tapjoy/tass/tree/HEAD)
+
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v1.0.2...HEAD)
+
+**Closed issues:**
+
+- Support for EBS optimized instances [\#38](https://github.com/Tapjoy/tass/issues/38)
+- Use UTC time [\#34](https://github.com/Tapjoy/tass/issues/34)
+- Specs fail due to insufficient wait [\#23](https://github.com/Tapjoy/tass/issues/23)
+
+**Merged pull requests:**
+
+- OPER-3354 Add ability to update existing ASGs w/ current config [\#43](https://github.com/Tapjoy/tass/pull/43) ([alanbrent](https://github.com/alanbrent))
+- placement group [\#42](https://github.com/Tapjoy/tass/pull/42) ([geoffreyclark](https://github.com/geoffreyclark))
+- Adding ebs optimized option to launch config [\#41](https://github.com/Tapjoy/tass/pull/41) ([geoffreyclark](https://github.com/geoffreyclark))
+- Add spot pricing option to launch config [\#40](https://github.com/Tapjoy/tass/pull/40) ([geoffreyclark](https://github.com/geoffreyclark))
+- Feature/v1 style metrics [\#39](https://github.com/Tapjoy/tass/pull/39) ([atayarani](https://github.com/atayarani))
+- use UTC in datestamp \#34 [\#37](https://github.com/Tapjoy/tass/pull/37) ([atayarani](https://github.com/atayarani))
+
 ## [v1.0.2](https://github.com/Tapjoy/tass/tree/v1.0.2) (2016-06-07)
 [Full Changelog](https://github.com/Tapjoy/tass/compare/v1.0.1...v1.0.2)
 
@@ -30,7 +49,7 @@
 - OPER-1866 \#in-review deprecate --env [\#22](https://github.com/Tapjoy/tass/pull/22) ([atayarani](https://github.com/atayarani))
 
 ## [v1.0.0](https://github.com/Tapjoy/tass/tree/v1.0.0) (2015-11-03)
-[Full Changelog](https://github.com/Tapjoy/tass/compare/list...v1.0.0)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v0.2.2...v1.0.0)
 
 **Merged pull requests:**
 
@@ -40,11 +59,11 @@
 - Allow configuration of ASG termination policies [\#14](https://github.com/Tapjoy/tass/pull/14) ([atayarani](https://github.com/atayarani))
 - Create a new workflow around ELB that is separate from ASG [\#13](https://github.com/Tapjoy/tass/pull/13) ([atayarani](https://github.com/atayarani))
 
-## [list](https://github.com/Tapjoy/tass/tree/list) (2015-09-22)
-[Full Changelog](https://github.com/Tapjoy/tass/compare/v0.2.2...list)
-
 ## [v0.2.2](https://github.com/Tapjoy/tass/tree/v0.2.2) (2015-09-22)
-[Full Changelog](https://github.com/Tapjoy/tass/compare/v0.2.1...v0.2.2)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/list...v0.2.2)
+
+## [list](https://github.com/Tapjoy/tass/tree/list) (2015-09-22)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v0.2.1...list)
 
 **Merged pull requests:**
 
