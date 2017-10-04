@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/Tapjoy/tass/tree/HEAD)
-
-[Full Changelog](https://github.com/Tapjoy/tass/compare/v1.0.2...HEAD)
+## [v1.1.0](https://github.com/Tapjoy/tass/tree/v1.1.0) (2017-10-04)
+[Full Changelog](https://github.com/Tapjoy/tass/compare/v1.0.2...v1.1.0)
 
 **Closed issues:**
 
@@ -12,6 +11,7 @@
 
 **Merged pull requests:**
 
+- v110 [\#44](https://github.com/Tapjoy/tass/pull/44) ([atayarani](https://github.com/atayarani))
 - OPER-3354 Add ability to update existing ASGs w/ current config [\#43](https://github.com/Tapjoy/tass/pull/43) ([alanbrent](https://github.com/alanbrent))
 - placement group [\#42](https://github.com/Tapjoy/tass/pull/42) ([geoffreyclark](https://github.com/geoffreyclark))
 - Adding ebs optimized option to launch config [\#41](https://github.com/Tapjoy/tass/pull/41) ([geoffreyclark](https://github.com/geoffreyclark))
